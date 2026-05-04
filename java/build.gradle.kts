@@ -24,6 +24,8 @@ val watchForChange = "src/**/*"
 val doOnChange = "${projectDir}/gradlew classes"
 
 application {
+  //Modificare questa riga per cambiare la main class che viene eseguita con ./gradlew run
+  //Dovete mettere il package della Classe Main
   mainClass.set("cus.RunBackend") // (launcherClassName)
 }
 
