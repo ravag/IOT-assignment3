@@ -14,7 +14,8 @@ public class RunBackend {
         if (arduino.connect()) {
             arduino.waitForArduinoReady();
             arduino.sendMsg("Mi senti?");
-            arduino.readResponse();
+            arduino.sendMsg("Mi senti due volte?");
+            arduino.sendMsg("cosa ti ho detto?");
             arduino.disconnect();
         }
     }

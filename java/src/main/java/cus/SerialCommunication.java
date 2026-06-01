@@ -62,6 +62,8 @@ import java.util.Scanner;
             } else {
                 System.err.println("[Errore]: Canale di output non pronto. Provare a controllare se la connessione è stata iniziata.");
             }
+
+            readResponse();
         }
 
         public void disconnect() {
@@ -85,7 +87,7 @@ import java.util.Scanner;
             }
         }
 
-        public void readResponse() {
+        private void readResponse() {
             if (input != null && input.hasNextLine()) {
                 String response = input.nextLine();
                 System.out.println("[Ricevuto da Arduino]: " + response);
