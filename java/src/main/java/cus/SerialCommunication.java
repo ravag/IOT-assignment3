@@ -1,80 +1,94 @@
-package cus;
+    package cus;
 
-import com.fazecast.jSerialComm.SerialPort;
-import java.io.PrintWriter;
-import java.util.Scanner;
+    import com.fazecast.jSerialComm.SerialPort;
+    import java.io.PrintWriter;
+    import java.util.Scanner;
 
-public class SerialCommunication {
-    private SerialPort comPort;
-    private PrintWriter output;
-    private Scanner input;
-    private Thread listeningThread;
+    public class SerialCommunication {
+        private SerialPort comPort;
+        private PrintWriter output;
+        private Scanner input;
+        private Thread listeningThread;
 
-    public SerialCommunication(String portName, int baudRate) {
-        this.comPort = SerialPort.getCommPort(portName);
-        this.comPort.setBaudRate(baudRate);
-    }
-
-    public boolean connect() {
-        if (!comPort.openPort()) {
-            System.err.println("Errore. Impossibile aprire la porta " + comPort.getSystemPortName());
-            return false;
+        public SerialCommunication(String portName, int baudRate) {
+            this.comPort = SerialPort.getCommPort(portName);
+            this.comPort.setBaudRate(baudRate);
         }
 
-        System.out.println("Porta seriale aperta con successo su " + comPort.getSystemPortName());
+        public boolean connect() {
+            if (comPort.isOpen()) {
+                comPort.closePort();
+            }
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+            if (!comPort.openPort()) {
+                System.err.println("Errore. Impossibile aprire la porta " + comPort.getSystemPortName() + ". Ricordati di chiudere l'esecuzione precedente in background.");
+                return false;
+            }
 
-        this.output = new PrintWriter(comPort.getOutputStream(), true);
-        this.input = new Scanner(comPort.getInputStream());
+            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+            comPort.setDTR();
+            comPort.setRTS();
 
-        startListening();
+            System.out.println("Porta seriale aperta con successo su " + comPort.getSystemPortName());
 
-        return true;
-    }
+            this.output = new PrintWriter(comPort.getOutputStream(), true);
+            this.input = new Scanner(comPort.getInputStream());
 
-    private void startListening() {
-        listeningThread = new Thread(() -> {
             try {
-                while (input != null && input.hasNextLine()) {
-                    String recievedLine = input.nextLine();
-                    System.out.println("[Ricevuto da Arduino]: " + recievedLine);
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            startListening();
+
+            return true;
+        }
+
+        private void startListening() {
+            listeningThread = new Thread(() -> {
+                try {
+                    while (input != null && input.hasNextLine()) {
+                        String recievedLine = input.nextLine();
+                        System.out.println("[Ricevuto da Arduino]: " + recievedLine);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Lettura seriale interrotta.");
                 }
-            } catch (Exception e) {
-                System.out.println("Lettura seriale interrotta.");
-            }
-        });
+            });
 
-        listeningThread.setDaemon(true);
-        listeningThread.start();
-    }
-
-    public void sendMsg(String msg) {
-        if (output != null) {
-            output.println(msg);
-            System.out.println("[Inviato a Arduino]: " + msg);
-        } else {
-            System.err.println("[Errore]: Canale di output non pronto. Provare a controllare se la connessione è stata iniziata.");
+            listeningThread.setDaemon(true);
+            listeningThread.start();
         }
-    }
 
-    public void disconnect() {
-        try {
-            if (input != null) {
-                input.close();
-            }
+        public void sendMsg(String msg) {
             if (output != null) {
-                output.close();
+                output.println(msg);
+                output.flush();
+                System.out.println("[Inviato a Arduino]: " + msg);
+            } else {
+                System.err.println("[Errore]: Canale di output non pronto. Provare a controllare se la connessione è stata iniziata.");
             }
-            if (comPort != null && comPort.isOpen()) {
-                System.out.println("Porta seriale chiusa correttamente.");
+        }
+
+        public void disconnect() {
+            try {
+                System.out.println("Disconnessione dalla porta seriale in corso...");
+                if (comPort != null && comPort.isOpen()) {
+                    comPort.closePort();
+                    System.out.println("Porta seriale chiusa correttamente.");
+                }
+
+                if (input != null) {
+                    input.close();
+                }
+                if (output != null) {
+                    output.close();
+                }
+                System.out.println("Tutti i flussi I/O sono stati chiusi correttamente.");
+                
+            } catch (Exception e) {
+                System.err.println("Errore durante la chiusura della porta seriale: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Errore durante la chiusura della porta seriale: " + e.getMessage());
         }
     }
-}
