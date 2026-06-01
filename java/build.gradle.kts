@@ -63,3 +63,9 @@ tasks.withType<Test> {
 /* tasks.withType<JavaExec> {
   args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
 } */
+
+tasks.javadoc {
+  options {
+    (this as StandardJavadocDocletOptions).version(true);
+  }
+}
