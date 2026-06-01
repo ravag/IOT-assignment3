@@ -1,14 +1,13 @@
-    package cus;
+package cus;
 
-    import com.fazecast.jSerialComm.SerialPort;
-    import java.io.PrintWriter;
-    import java.util.Scanner;
+import com.fazecast.jSerialComm.SerialPort;
+import java.io.PrintWriter;
+import java.util.Scanner;
 
     public class SerialCommunication {
         private SerialPort comPort;
         private PrintWriter output;
         private Scanner input;
-        private Thread listeningThread;
 
         public SerialCommunication(String portName, int baudRate) {
             this.comPort = SerialPort.getCommPort(portName);
@@ -34,31 +33,25 @@
             this.output = new PrintWriter(comPort.getOutputStream(), true);
             this.input = new Scanner(comPort.getInputStream());
 
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            startListening();
-
             return true;
         }
 
-        private void startListening() {
-            listeningThread = new Thread(() -> {
-                try {
-                    while (input != null && input.hasNextLine()) {
-                        String recievedLine = input.nextLine();
-                        System.out.println("[Ricevuto da Arduino]: " + recievedLine);
-                    }
-                } catch (Exception e) {
-                    System.out.println("Lettura seriale interrotta.");
-                }
-            });
+        public void waitForArduinoReady() {
+            System.out.println("In attesa del segnale di pronto da Arduino Uno...");
 
-            listeningThread.setDaemon(true);
-            listeningThread.start();
+            if (input == null) {
+                System.err.println("Scanner non inizializzato.");
+                return;
+            }
+
+            while (input.hasNextLine()) {
+                String line = input.nextLine();
+                System.out.println("[DEBUG]: java ha letto nel boot -> " + line);
+                if (line.contains("READY")) {
+                    System.out.println("Arduino è sveglio e pronto!");
+                    break;
+                }
+            }
         }
 
         public void sendMsg(String msg) {
@@ -86,9 +79,16 @@
                     output.close();
                 }
                 System.out.println("Tutti i flussi I/O sono stati chiusi correttamente.");
-                
+
             } catch (Exception e) {
                 System.err.println("Errore durante la chiusura della porta seriale: " + e.getMessage());
+            }
+        }
+
+        public void readResponse() {
+            if (input != null && input.hasNextLine()) {
+                String response = input.nextLine();
+                System.out.println("[Ricevuto da Arduino]: " + response);
             }
         }
     }

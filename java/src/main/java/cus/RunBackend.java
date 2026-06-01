@@ -12,12 +12,10 @@ public class RunBackend {
 
         SerialCommunication arduino = new SerialCommunication("COM3", 115200);
         if (arduino.connect()) {
-            //try{Thread.sleep(5000);} catch (InterruptedException e) {}
-            arduino.sendMsg("test invio");
-            //try{Thread.sleep(5000);} catch (InterruptedException e) {}
+            arduino.waitForArduinoReady();
+            arduino.sendMsg("Mi senti?");
+            arduino.readResponse();
             arduino.disconnect();
-
-            
         }
     }
 }
