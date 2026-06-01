@@ -9,5 +9,12 @@ public class RunBackend {
         Vertx vertx = Vertx.vertx();
         DataService service = new DataService(PORT);
         vertx.deployVerticle(service);
+
+        SerialCommunication arduino = new SerialCommunication("COM3", 115200);
+        if (arduino.connect()) {
+            arduino.sendMsg("test invio");
+            try{Thread.sleep(10000);} catch (InterruptedException e) {}
+            arduino.disconnect();
+        }
     }
 }
