@@ -28,15 +28,17 @@ import java.util.Scanner;
             comPort.setDTR();
             comPort.setRTS();
 
-            System.out.println("Porta seriale aperta con successo su " + comPort.getSystemPortName());
-
             this.output = new PrintWriter(comPort.getOutputStream(), true);
             this.input = new Scanner(comPort.getInputStream());
+
+            waitForArduinoReady();
+
+            System.out.println("Porta seriale aperta con successo su " + comPort.getSystemPortName());
 
             return true;
         }
 
-        public void waitForArduinoReady() {
+        private void waitForArduinoReady() {
             System.out.println("In attesa del segnale di pronto da Arduino Uno...");
 
             if (input == null) {

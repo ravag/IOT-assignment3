@@ -12,7 +12,6 @@ public class RunBackend {
 
         SerialCommunication arduino = new SerialCommunication("COM3", 115200);
         if (arduino.connect()) {
-            arduino.waitForArduinoReady();
             arduino.sendMsg("Mi senti?");
             arduino.sendMsg("Mi senti due volte?");
             arduino.sendMsg("cosa ti ho detto?");
