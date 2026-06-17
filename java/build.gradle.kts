@@ -35,6 +35,7 @@ dependencies {
   implementation("io.vertx:vertx-web")
   implementation("io.vertx:vertx-mqtt")
   implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+  implementation("com.fazecast:jSerialComm:2.11.0")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -63,3 +64,9 @@ tasks.withType<Test> {
 /* tasks.withType<JavaExec> {
   args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
 } */
+
+tasks.javadoc {
+  options {
+    (this as StandardJavadocDocletOptions).version(true);
+  }
+}
