@@ -34,6 +34,7 @@ dependencies {
   implementation("io.vertx:vertx-web-client")
   implementation("io.vertx:vertx-web")
   implementation("io.vertx:vertx-mqtt")
+  implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")

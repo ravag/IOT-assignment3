@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../java"
+		},
+		{
+			"name": "ESP32",
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}
