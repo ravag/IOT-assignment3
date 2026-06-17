@@ -1,18 +1,39 @@
-#include <Arduino.h>
+#include "Arduino.h"
+#include "devices/PotImpl.h"
 
-// put function declarations here:
-int myFunction(int, int);
+// Creiamo un puntatore all'interfaccia Pot
+Pot* mioPotenziometro;
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+    // Inizializza la comunicazione seriale a 9600 baud
+    Serial.begin(9600);
+    while (!Serial) {
+        ; // Aspetta che la porta seriale si connetta (necessario per alcune schede come Leonardo/Micro)
+    }
+
+    // Istanziamo il potenziometro sul pin analogico A0
+    mioPotenziometro = new PotImpl(A0);
+    
+    Serial.println("--- Test Potenziometro Avviato ---");
+    Serial.println("Gira il potenziometro per vedere i cambiamenti...");
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+    // Controlliamo SE il valore è cambiato oltre la soglia di tolleranza
+    if (mioPotenziometro->hasChanged()) {
+        
+        // Leggiamo sia il valore grezzo che la percentuale
+        int valoreGrezzo = mioPotenziometro->getValue();
+        int percentuale = mioPotenziometro->getPercentage();
+        
+        // Stampiamo i dati sul Serial Monitor
+        Serial.print("Cambiamento rilevato! -> Valore ADC: ");
+        Serial.print(valoreGrezzo);
+        Serial.print(" | Percentuale: ");
+        Serial.print(percentuale);
+        Serial.println("%");
+    }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+    // Un piccolissimo delay per non sovraccaricare la CPU di Arduino
+    delay(50);
 }
