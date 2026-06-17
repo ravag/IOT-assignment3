@@ -1,7 +1,7 @@
 package cus;
 
+import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.Random;
 
 import io.vertx.core.AbstractVerticle;
@@ -17,12 +17,11 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class DataService extends AbstractVerticle {
     
     private int port;
-	private static final int MAX_SIZE = 10;
-	private LinkedList<DataPoint> values;
+	private DataPoint values;
 	private Random rnd = new Random();
 	
 	public DataService(int port) {
-		values = new LinkedList<>();		
+		values = new DataPoint(10, 0, "Connected");		
 		this.port = port;
 	}
 
@@ -36,15 +35,7 @@ public class DataService extends AbstractVerticle {
 		router.post("/api/data").handler(this::handleAddNewData);
 
 		router.route().handler(StaticHandler.create("webroot"));
-		router.route().handler(routingContext -> {
-			HttpServerRequest request = routingContext.request();
-			HttpServerResponse response = routingContext.response();
-			if (request.path().equals("/")) {
-				response.sendFile("src\\main\\resources\\webroot\\index.html");
-			}else{
-				response.sendFile( "src\\main\\resources\\webroot" + request.path() );
- 			}
-		});
+		router.route().handler(this::handlePage);
 
 		vertx
 			.createHttpServer()
@@ -52,6 +43,16 @@ public class DataService extends AbstractVerticle {
 			.listen(port);
 
 		log("Service ready on port: " + port);
+	}
+
+	private void handlePage(RoutingContext routingContext) {
+		HttpServerRequest request = routingContext.request();
+		HttpServerResponse response = routingContext.response();
+		if (request.path().equals("/")) {
+			response.sendFile("src\\main\\resources\\webroot\\index.html");
+		}else{
+			response.sendFile( "src\\main\\resources\\webroot" + request.path() );
+		}
 	}
 	
 	private void handleAddNewData(RoutingContext routingContext) {
@@ -65,10 +66,10 @@ public class DataService extends AbstractVerticle {
 			String place = res.getString("place");
 			long time = System.currentTimeMillis();
 			
-			values.addLast(new DataPoint(value, time, place));
+			/* values.addLast(new DataPoint(value, time, place));
 			if (values.size() > MAX_SIZE) {
 				values.removeFirst();
-			}
+			} */
 			
 			log("New value: " + value + " from " + place + " on " + new Date(time));
 			response.setStatusCode(200).end();
@@ -77,22 +78,25 @@ public class DataService extends AbstractVerticle {
 	
 	private void handleGetData(RoutingContext routingContext) {
 		JsonArray arr = new JsonArray();
-		values.addLast(new DataPoint(rnd.nextDouble(), System.currentTimeMillis(), "ciao"));
-		if (values.size() > MAX_SIZE) {
-				values.removeFirst();
-			}
+		values.addData(new Pair<>(rnd.nextDouble(),Calendar.getInstance()));
 
-		for (DataPoint p: values) {
+		for (Pair<Double,Calendar> p: values.getData()) {
 			JsonObject data = new JsonObject();
-			data.put("time", p.getTime());
-			data.put("value", p.getValue());
-			data.put("place", p.getPlace());
+			data.put("time", p.b().get(Calendar.MINUTE) + ":" + p.b().get(Calendar.SECOND));
+			data.put("value", p.a());
 			arr.add(data);
 		} 
+
+		JsonObject data = new JsonObject();
+		values.setOpening(rnd.nextInt(100));
+		data.put("data",arr);
+		data.put("opening",values.getOpening());
+		data.put("status", values.getState());
+
 		routingContext.response()
 			.putHeader("content-type", "application/json")
             //.sendFile("src\\main\\resources\\*");
-			.end(arr.encodePrettily());
+			.end(data.encodePrettily());
 	}
 	
 	private void sendError(int statusCode, HttpServerResponse response) {

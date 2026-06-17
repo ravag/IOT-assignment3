@@ -1,25 +1,49 @@
 package cus;
 
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
+
 class DataPoint {
-	private double value;
-	private long time;
-	private String place;
-	
-	public DataPoint(double value, long time, String place) {
-		this.value = value;
-		this.time = time;
-		this.place = place;
+	private final List<Pair<Double,Calendar>> data = new LinkedList<>();
+	private final int size;
+	private int opening;
+	private String state; /*Sostituisci con un enum */
+
+	public DataPoint(int size, int opening, String state) {
+		this.size = size;
+		this.opening = opening;
+		this.state = state;
+		data.addAll(Stream.iterate(0,i -> i+1).limit(size).map(i -> new Pair<>(0.0, Calendar.getInstance())).toList());
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public int getOpening() {
+		return this.opening;
+	}
+
+	public void setOpening(int opening) {
+		this.opening = opening;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public void addData(Pair<Double,Calendar> newData) {
+		data.addLast(newData);
+		data.removeFirst();
 	}
 	
-	public double getValue() {
-		return value;
-	}
-	
-	public long getTime() {
-		return time;
-	}
-	
-	public String getPlace() {
-		return place;
+	public List<Pair<Double,Calendar>> getData() {
+		return List.copyOf(data);
 	}
 }

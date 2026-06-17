@@ -1,9 +1,24 @@
 
-let systemStatus = "CONNECTED";
+let systemStatus = "AUTOMATIC";
+
+const switch_mode_button = document.getElementById("switch_mode");
+const open_slider = document.getElementById("opening");
 
 //Variabile che indica ogni quanti millisecondi si faccia un aggiornamento automatico
 const interval = 1000;
 
+switch_mode_button.addEventListener("click",function(event) {
+    event.preventDefault();
+    if(systemStatus == "AUTOMATIC") {
+        systemStatus = "MANUAL";
+        switch_mode_button.innerHTML="Automatica";
+        open_slider.disabled = false;
+    } else {
+        systemStatus = "AUTOMATIC"
+        switch_mode_button.innerHTML="Manuale";
+        open_slider.disabled = true;
+    }
+});
 
 //2 modi per fare grafici, bisogna decidere, io preferisco usare Ploty
 //Data must be a json array
@@ -92,19 +107,20 @@ async function addValues() {
         }
         const json = await response.json();
         let text = "";
-        json.forEach(e => {
-            text += `[${e["value"]},${e["time"]},${e["place"]}]`
+        json["data"].forEach(e => {
+            text += `[${e["value"]},${e["time"]}]`
         });
         p.innerHTML = text;
-        systemStatus = "CONNECTED";
+        systemStatus = systemStatus=="NOT AVAILABLE"? "AUTOMATIC" : systemStatus; /*Prendi dal messaggio lo stato a cui riandare se prima era NOT AVAILABLE*/ 
+        console.log(json);
 
-        drawGraph(json);
+        drawGraph(json["data"]);
 
     } catch (error) {
         systemStatus = "NOT AVAILABLE";
         console.log(error);
     }
-
+    
     console.log(systemStatus);
 } 
 
@@ -137,6 +153,14 @@ async function refresh(ms) {
         await delay(ms);
         console.log("ciao");
         addValues();
+
+        if(systemStatus == "NOT AVAILABLE") {
+            switch_mode_button.disabled = true;
+            open_slider.disabled = true;
+        } else {
+            switch_mode_button.disabled = false;
+        }
+        console.log(open_slider.value)
     }    
 }
 
