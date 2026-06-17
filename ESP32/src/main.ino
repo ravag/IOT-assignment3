@@ -1,6 +1,12 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <devices/Led.h>
+#include <devices/Sonar.h>
 #define MSG_BUFFER_SIZE 50
+
+Led* greenLed = new Led(2);
+Led* redLed = new Led(3);
+Sonar* pSonar = new Sonar(12,11,150000);
 
 /* wifi network info */
 
@@ -77,17 +83,22 @@ void setup() {
 void loop() {
 
     if (!client.connected()) {
+        greenLed->switchOff();
+        redLed->switchOn();
         reconnect();
+    } else {
+        redLed->switchOff();
+        greenLed->switchOn();
     }
     client.loop();
 
     unsigned long now = millis();
     if (now - lastMsgTime > 10000) {
         lastMsgTime = now;
-        value++;
+        value = pSonar->getDistance();
 
         /* creating a msg in the buffer */
-        snprintf(msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
+        snprintf(msg, MSG_BUFFER_SIZE, "Valore acqua: ", value);
 
         Serial.println(String("Publishing message: ") + msg);
 
