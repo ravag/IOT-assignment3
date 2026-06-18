@@ -29,13 +29,15 @@ public class DataService extends AbstractVerticle {
 	public void start() {		
 		Router router = Router.router(vertx);
 
-		router.route("/api/data").handler(BodyHandler.create());
-		
-		router.get("/api/data").handler(this::handleGetData);
-		router.post("/api/data").handler(this::handleAddNewData);
+		router.post("/api/mode").handler(BodyHandler.create().setHandleFileUploads(false).setBodyLimit(-1)).handler(this::handleModeChange);
 
-		router.route().handler(StaticHandler.create("webroot"));
-		router.route().handler(this::handlePage);
+		router.route("/api/data").handler(BodyHandler.create());
+		router.get("/api/data").handler(this::handleGetData);
+		router.post("/api/data").handler(this::handleNewOpening);
+
+		
+
+		router.get().handler(StaticHandler.create("webroot")).handler(this::handlePage);
 
 		vertx
 			.createHttpServer()
@@ -43,6 +45,18 @@ public class DataService extends AbstractVerticle {
 			.listen(port);
 
 		log("Service ready on port: " + port);
+	}
+
+	private void handleModeChange(RoutingContext routingContext) {
+		HttpServerResponse response = routingContext.response();
+		JsonObject res = routingContext.body().asJsonObject();
+		if (res == null) {
+			sendError(400, response);
+		} else {
+			values.setState(res.getString("state"));
+			log("Received new status: " + res.getString("state"));
+			response.setStatusCode(200).end();
+		}
 	}
 
 	private void handlePage(RoutingContext routingContext) {
@@ -55,7 +69,7 @@ public class DataService extends AbstractVerticle {
 		}
 	}
 	
-	private void handleAddNewData(RoutingContext routingContext) {
+	private void handleNewOpening(RoutingContext routingContext) {
 		HttpServerResponse response = routingContext.response();
 		log("new msg "+routingContext.body().asString());
 		JsonObject res = routingContext.body().asJsonObject();

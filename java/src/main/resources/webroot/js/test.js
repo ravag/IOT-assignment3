@@ -5,11 +5,29 @@ const switch_mode_button = document.getElementById("switch_mode");
 const open_slider = document.getElementById("opening");
 
 //Variabile che indica ogni quanti millisecondi si faccia un aggiornamento automatico
-const interval = 1000;
+const interval = 5000;
 
-switch_mode_button.addEventListener("click",function(event) {
+switch_mode_button.addEventListener("click",async function(event) {
     event.preventDefault();
-    if(systemStatus == "AUTOMATIC") {
+    let status = systemStatus == "AUTOMATIC" ? "MANUAL" : "AUTOMATIC";
+    const url = "/api/mode";
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-type":"application/json"
+            },
+            body: `{"state":"${status}"}`
+        });
+        if (!response.ok) {
+            throw new Error("errore di connessione: " + response.status)
+        }
+        console.log("successo");
+    } catch (error) {
+        console.log(error);
+    }
+    /* if(systemStatus == "AUTOMATIC") {
         systemStatus = "MANUAL";
         switch_mode_button.innerHTML="Automatica";
         open_slider.disabled = false;
@@ -17,7 +35,7 @@ switch_mode_button.addEventListener("click",function(event) {
         systemStatus = "AUTOMATIC"
         switch_mode_button.innerHTML="Manuale";
         open_slider.disabled = true;
-    }
+    } */
 });
 
 //2 modi per fare grafici, bisogna decidere, io preferisco usare Ploty
@@ -111,7 +129,8 @@ async function addValues() {
             text += `[${e["value"]},${e["time"]}]`
         });
         p.innerHTML = text;
-        systemStatus = systemStatus=="NOT AVAILABLE"? "AUTOMATIC" : systemStatus; /*Prendi dal messaggio lo stato a cui riandare se prima era NOT AVAILABLE*/ 
+        systemStatus = json["status"];
+        //systemStatus = systemStatus=="NOT AVAILABLE"? "AUTOMATIC" : systemStatus; /*Prendi dal messaggio lo stato a cui riandare se prima era NOT AVAILABLE*/ 
         console.log(json);
 
         drawGraph(json["data"]);
@@ -123,6 +142,10 @@ async function addValues() {
     
     console.log(systemStatus);
 } 
+
+/* open_slider.addEventListener("change",function(){
+    console.log(open_slider.value)
+}) */
 
 document.querySelector("button").addEventListener('click', async function() {
     const url = "/api/data";
