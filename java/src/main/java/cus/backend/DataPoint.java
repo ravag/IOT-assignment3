@@ -1,9 +1,11 @@
-package cus;
+package cus.backend;
 
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
+
+import cus.Pair;
 
 class DataPoint {
 	private final List<Pair<Double,Calendar>> data = new LinkedList<>();
