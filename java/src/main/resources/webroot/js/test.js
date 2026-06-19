@@ -3,7 +3,12 @@ let systemStatus = "AUTOMATIC";
 
 const switch_mode_button = document.getElementById("switch_mode");
 const open_slider = document.getElementById("opening");
+const openingText = document.getElementById("openingText");
+const statusText = document.getElementById("statusText");
 
+document.getElementById("setOpening").addEventListener("click",function(event){
+    event.preventDefault();
+})
 //Variabile che indica ogni quanti millisecondi si faccia un aggiornamento automatico
 const interval = 5000;
 
@@ -23,19 +28,9 @@ switch_mode_button.addEventListener("click",async function(event) {
         if (!response.ok) {
             throw new Error("errore di connessione: " + response.status)
         }
-        console.log("successo");
     } catch (error) {
         console.log(error);
     }
-    /* if(systemStatus == "AUTOMATIC") {
-        systemStatus = "MANUAL";
-        switch_mode_button.innerHTML="Automatica";
-        open_slider.disabled = false;
-    } else {
-        systemStatus = "AUTOMATIC"
-        switch_mode_button.innerHTML="Manuale";
-        open_slider.disabled = true;
-    } */
 });
 
 //2 modi per fare grafici, bisogna decidere, io preferisco usare Ploty
@@ -54,50 +49,52 @@ function drawGraph(data) {
         xValues.push(e["time"]);
     });
 
-    new Chart(graph, {
-        type: "line",
-        data: {
-            labels: xValues,
-            datasets: [{
-                fill: true,
-                lineTension: 0,
-                backgroundColor: "rgba(0,0,255,1.0)",
-                borderColor: "rgba(0,0,255,1.0)",
-                data: yValues
-            }]
-        },
-        options: {
-            plugins: {
-                legend: {display:false},
-                title: {
-                    display: true,
-                    text: "Water level",
-                    font: {size:16}
-                },
-                filler: {
-                    drawTime: "beforeDatasetDraw"
+    if (interval >= 5000) {
+        new Chart(graph, {
+            type: "line",
+            data: {
+                labels: xValues,
+                datasets: [{
+                    fill: true,
+                    lineTension: 0,
+                    backgroundColor: "rgba(0,0,255,1.0)",
+                    borderColor: "rgba(0,0,255,1.0)",
+                    data: yValues
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {display:false},
+                    title: {
+                        display: true,
+                        text: "Water level",
+                        font: {size:16}
+                    },
+                    filler: {
+                        drawTime: "beforeDatasetDraw"
+                    }
                 }
             }
-        }
-    });
+        });
+    } else {
+        //Grafico fatto con Ploty 
+        // Define Data
+        const inputs = [{
+            x: xValues,
+            y: yValues,
+            mode:"lines"
+        }];
 
-    //Grafico fatto con Ploty 
-    // Define Data
-    const inputs = [{
-        x: xValues,
-        y: yValues,
-        mode:"lines"
-    }];
+        // Define Layout
+        const layout = {
+            xaxis: {range: [xValues[0], xValues[xValues.length -1 ]],title: "Time"},
+            yaxis: {range: [0, 1], title: "Level"},  
+            title: "Watah"
+        };
 
-    // Define Layout
-    const layout = {
-        xaxis: {range: [xValues[0], xValues[xValues.length -1 ]],title: "Time"},
-        yaxis: {range: [0, 1], title: "Level"},  
-        title: "Watah"
-    };
-
-    // Display using Plotly
-    Plotly.newPlot("charticus", inputs, layout);
+        // Display using Plotly
+        Plotly.newPlot("charticus", inputs, layout);
+    }
 }
 
 //Una fecth che ha un limite di tempo per andare a buon fine
@@ -131,8 +128,8 @@ async function addValues() {
         p.innerHTML = text;
         systemStatus = json["status"];
         //systemStatus = systemStatus=="NOT AVAILABLE"? "AUTOMATIC" : systemStatus; /*Prendi dal messaggio lo stato a cui riandare se prima era NOT AVAILABLE*/ 
-        console.log(json);
-
+        //console.log(json);
+        openingText.innerHTML = json["opening"];
         drawGraph(json["data"]);
 
     } catch (error) {
@@ -143,9 +140,10 @@ async function addValues() {
     console.log(systemStatus);
 } 
 
-/* open_slider.addEventListener("change",function(){
-    console.log(open_slider.value)
-}) */
+open_slider.addEventListener("input",function(){
+    num = document.getElementById("currentOpening");
+    num.value = open_slider.value; 
+})
 
 document.querySelector("button").addEventListener('click', async function() {
     const url = "/api/data";
@@ -167,6 +165,33 @@ document.querySelector("button").addEventListener('click', async function() {
     }
 });    
 
+function buttonHandler() {
+    statusText.innerHTML = systemStatus;
+    switch (systemStatus) {
+        case "UNCONNECTED":
+            switch_mode_button.disabled = true;
+            open_slider.disabled = true;
+            break;
+
+        case "MANUAL":
+            switch_mode_button.disabled = false;
+            open_slider.disabled = false;
+            switch_mode_button.innerHTML = "AUTOMATIC";
+            break;
+
+        case "AUTOMATIC":
+            switch_mode_button.disabled = false;
+            open_slider.disabled = true;
+            switch_mode_button.innerHTML = "MANUAL";
+            break;
+
+        default:
+            switch_mode_button.disabled = true;
+            open_slider.disabled = true;
+            break;
+    }
+}
+
 //Funzione per attendere ms millisecondi
 const delay = ms => new Promise(res => setTimeout(res,ms));
 
@@ -174,16 +199,9 @@ const delay = ms => new Promise(res => setTimeout(res,ms));
 async function refresh(ms) {
     while (true) {
         await delay(ms);
-        console.log("ciao");
         addValues();
 
-        if(systemStatus == "NOT AVAILABLE") {
-            switch_mode_button.disabled = true;
-            open_slider.disabled = true;
-        } else {
-            switch_mode_button.disabled = false;
-        }
-        console.log(open_slider.value)
+        buttonHandler();
     }    
 }
 

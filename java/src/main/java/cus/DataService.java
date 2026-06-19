@@ -21,7 +21,7 @@ public class DataService extends AbstractVerticle {
 	private Random rnd = new Random();
 	
 	public DataService(int port) {
-		values = new DataPoint(10, 0, "Connected");		
+		values = new DataPoint(10, 0, "AUTOMATIC");		
 		this.port = port;
 	}
 
