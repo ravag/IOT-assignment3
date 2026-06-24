@@ -56,9 +56,11 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			values.setState(State.valueOf(res.getString("state")));
+			values.setState(values.getState().equals(State.UNCONNECTED) ? State.UNCONNECTED : State.valueOf(res.getString("state")));
 			log("Received new status: " + res.getString("state"));
-			response.setStatusCode(200).end();
+			JsonObject data = new JsonObject();
+			data.put("state",values.getState().toString());
+			response.setStatusCode(200).putHeader("content-type", "application/json").end(data.encodePrettily());
 		}
 	}
 
@@ -111,7 +113,6 @@ public class DataService extends AbstractVerticle {
 
 		routingContext.response()
 			.putHeader("content-type", "application/json")
-            //.sendFile("src\\main\\resources\\*");
 			.end(data.encodePrettily());
 	}
 	
