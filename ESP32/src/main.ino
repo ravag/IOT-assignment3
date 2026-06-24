@@ -95,7 +95,8 @@ void loop() {
     unsigned long now = millis();
     if (now - lastMsgTime > 10000) {
         lastMsgTime = now;
-        value = pSonar->getDistance() || "10";
+        value = random(0, 1000) / 10;
+        /* value = pSonar->getDistance() || "10"; */
 
         /* creating a msg in the buffer */
         snprintf(msg, MSG_BUFFER_SIZE, "Valore acqua: %d", value);
