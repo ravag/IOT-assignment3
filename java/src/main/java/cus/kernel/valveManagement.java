@@ -17,6 +17,7 @@ public class valveManagement extends Thread{
     private Danger danger;
     private long time;
     private long now;
+    private String response;
     private static final double L1 = 50.0;
     private static final double L2 = 75.0;
     private static final int T1 = 10;
@@ -31,6 +32,10 @@ public class valveManagement extends Thread{
     public void run() {
         serial.connect();
         while (!stopped) {
+            response = serial.readResponse();
+            if (response != "") {
+                
+            }
             if (data.getState() != Mode.AUTOMATIC) {
                 //mandare all'arduino l'apertura dell'operatore sul sito
                 serial.sendMsg("MODE: " + data.getState() + ", "
