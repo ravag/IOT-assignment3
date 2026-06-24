@@ -25,7 +25,7 @@ public class Main {
         valveManagement valve = new valveManagement(new SerialCommunication("COM3", 115200), data);
         subscriber.start();
         backend.start();
-        valve.start();
+        //valve.start();
 
         JFrame frame = new JFrame("Stopper");
         JButton btn = new JButton("Termina cus");

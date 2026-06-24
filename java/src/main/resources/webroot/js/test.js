@@ -7,8 +7,22 @@ const openingText = document.getElementById("openingText");
 const statusText = document.getElementById("statusText");
 const setOpeningBtn = document.getElementById("setOpening")
 
-setOpeningBtn.addEventListener("click",function(event){
+setOpeningBtn.addEventListener("click",async function(event){
     event.preventDefault();
+    const url = "/api/data";
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            body: `{"open":${open_slider.value}}`
+        });
+        if (!response.ok) {
+            throw new Error("errore di connessione: " + response.status);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+
 })
 //Variabile che indica ogni quanti millisecondi si faccia un aggiornamento automatico
 const interval = 5000;
@@ -150,7 +164,7 @@ open_slider.addEventListener("input",function(){
     num.value = open_slider.value; 
 })
 
-document.querySelector("button").addEventListener('click', async function() {
+/* document.querySelector("button").addEventListener('click', async function() {
     const url = "/api/data";
     const json = JSON.parse(`{"value":${Math.random()}, "time":${Date.now()}, "place":"caio"}`)
 
@@ -168,7 +182,7 @@ document.querySelector("button").addEventListener('click', async function() {
     } catch (error) {
         console.log(error);
     }
-});    
+});    */ 
 
 function buttonHandler() {
     statusText.innerHTML = systemStatus;

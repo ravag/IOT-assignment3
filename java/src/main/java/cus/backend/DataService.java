@@ -1,7 +1,6 @@
 package cus.backend;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Random;
 
 import cus.data.DataPoint;
@@ -81,16 +80,8 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			float value = res.getFloat("value");
-			String place = res.getString("place");
-			long time = System.currentTimeMillis();
-			
-			/* values.addLast(new DataPoint(value, time, place));
-			if (values.size() > MAX_SIZE) {
-				values.removeFirst();
-			} */
-			
-			log("New value: " + value + " from " + place + " on " + new Date(time));
+			values.setOpeningObjective(res.getInteger("open"));
+			log("New value: " + values.getOpeningObjective());
 			response.setStatusCode(200).end();
 		}
 	}
