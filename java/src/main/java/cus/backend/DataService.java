@@ -6,7 +6,7 @@ import java.util.Random;
 
 import cus.data.DataPoint;
 import cus.data.Pair;
-import cus.data.State;
+import cus.data.Mode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -56,7 +56,7 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			values.setState(values.getState().equals(State.UNCONNECTED) ? State.UNCONNECTED : State.valueOf(res.getString("state")));
+			values.setState(values.getState().equals(Mode.UNCONNECTED) ? Mode.UNCONNECTED : Mode.valueOf(res.getString("state")));
 			log("Received new status: " + res.getString("state"));
 			JsonObject data = new JsonObject();
 			data.put("state",values.getState().toString());

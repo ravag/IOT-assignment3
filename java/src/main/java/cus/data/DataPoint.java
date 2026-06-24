@@ -10,9 +10,9 @@ public class DataPoint {
 	private final int size;
 	private int currentOpening;
 	private int openingObjective;
-	private State state; /*Sostituisci con un enum */
+	private Mode state; /*Sostituisci con un enum */
 
-	public DataPoint(int size, int opening, State state, int openingObjective) {
+	public DataPoint(int size, int opening, Mode state, int openingObjective) {
 		this.size = size;
 		this.currentOpening = opening;
 		this.state = state;
@@ -40,11 +40,11 @@ public class DataPoint {
 		this.openingObjective = openingObjective;
 	}
 
-	public synchronized State getState() {
+	public synchronized Mode getState() {
 		return state;
 	}
 
-	public synchronized void setState(State state) {
+	public synchronized void setState(Mode state) {
 		this.state = state;
 	}
 
@@ -56,6 +56,10 @@ public class DataPoint {
 	
 	public synchronized List<Pair<Double,Calendar>> getData() {
 		return List.copyOf(data);
+	}
+
+	public synchronized double getWaterLevel() {
+		return data.getLast().a();
 	}
 
 	

@@ -1,4 +1,4 @@
-package cus;
+package cus.kernel;
 
 import com.fazecast.jSerialComm.SerialPort;
 import java.io.PrintWriter;
@@ -90,8 +90,6 @@ public class SerialCommunication {
         } else {
             System.err.println("[Errore]: Canale di output non pronto. Provare a controllare se la connessione è stata iniziata.");
         }
-
-        readResponse();
     }
 
     /**
@@ -122,7 +120,7 @@ public class SerialCommunication {
         }
     }
 
-    private void readResponse() {
+    public void readResponse() {
         if (input != null && input.hasNextLine()) {
             String response = input.nextLine();
             System.out.println("[Ricevuto da Arduino]: " + response);
