@@ -3,6 +3,11 @@
 #include "devices/ButtonImpl.h"
 #include "devices/ServoMotorImpl.h"
 #include "devices/PotImpl.h"
+#include "LiquidCrystal_I2C.h"
+
+#define LCD_ADDR 0x27
+#define LCD_COLS 20
+#define LCD_ROWS 4
 
 const int BUTTON_PIN = 3;
 const int SERVO_PIN = 6;
@@ -11,9 +16,12 @@ const int POT_PIN = A0;
 ButtonImpl* button;
 ServoMotorImpl* servo;
 PotImpl* pot;
+LiquidCrystal_I2C* lcd;
 
 bool isValveOn = false;
 bool oldValveState = false;
+
+void updateLCD();
 
 void setup() {
     Serial.begin(9600);
@@ -21,6 +29,13 @@ void setup() {
     button = new ButtonImpl(BUTTON_PIN);
     servo = new ServoMotorImpl(SERVO_PIN);
     pot = new PotImpl(POT_PIN);
+    lcd = new LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
+
+    lcd->init();
+    lcd->backlight();
+    lcd->clear();
+    
+    updateLCD();
 
     Serial.println("-- Serial Initialized correctly --");
 }
@@ -30,6 +45,9 @@ void loop() {
         Serial.println("Premuto");
         button->resetButton();
         isValveOn = !isValveOn;
+
+        lcd->clear();
+        updateLCD();
     } 
 
     if (isValveOn) {
@@ -40,6 +58,8 @@ void loop() {
             servo->setPosition(angle);
             Serial.println("Modalità MANUALE Attiva");
             oldValveState = true;
+            lcd->clear();
+            updateLCD();
 
         }
             
@@ -51,6 +71,7 @@ void loop() {
             int inputPercentage = pot->getPercentage();
             int angle = map(inputPercentage, 0, 100, 0, 90);
             servo->setPosition(angle);
+            updateLCD();
             delay(50);
             
         } 
@@ -62,7 +83,33 @@ void loop() {
             servo->off();
             Serial.println("Modalità MANUALE Disattivata\nModalità AUTOMATICA Attivata");
             oldValveState = false;
+
+            lcd->clear();
+            updateLCD();
         }
     }
     delay(20);
+}
+
+void updateLCD() {
+    lcd->setCursor(0, 0);
+    if(isValveOn) {
+        lcd->print("Mode: MANUAL       ");
+    } else {
+        lcd->print("Mode: AUTOMATIC    ");
+    }
+
+    lcd->setCursor(0, 1);
+    lcd->print("Value: ");
+
+    if(isValveOn) {
+        lcd->print(pot->getPercentage());
+    } else {
+        if(servo->isOn()) {
+            lcd->print("Apertura automatica salvata in una variabile in futuro");
+        } else {
+            lcd->print("0");
+        }
+    }
+    lcd->print("%   ");
 }
