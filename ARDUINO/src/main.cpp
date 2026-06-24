@@ -4,14 +4,7 @@
 #include "devices/ServoMotorImpl.h"
 #include "devices/PotImpl.h"
 #include "LiquidCrystal_I2C.h"
-
-#define LCD_ADDR 0x27
-#define LCD_COLS 20
-#define LCD_ROWS 4
-
-const int BUTTON_PIN = 3;
-const int SERVO_PIN = 6;
-const int POT_PIN = A0;
+#include "config.h"
 
 ButtonImpl* button;
 ServoMotorImpl* servo;
