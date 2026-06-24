@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.Random;
 
 import cus.Pair;
+import cus.data.DataPoint;
+import cus.data.State;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -22,7 +24,7 @@ public class DataService extends AbstractVerticle {
 	private Random rnd = new Random();
 	
 	public DataService(int port) {
-		values = new DataPoint(10, 0, "AUTOMATIC");		
+		values = new DataPoint(10, 0, State.AUTOMATIC,0);		
 		this.port = port;
 	}
 
@@ -54,7 +56,7 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			values.setState(res.getString("state"));
+			values.setState(State.valueOf(res.getString("state")));
 			log("Received new status: " + res.getString("state"));
 			response.setStatusCode(200).end();
 		}
@@ -103,9 +105,9 @@ public class DataService extends AbstractVerticle {
 		} 
 
 		JsonObject data = new JsonObject();
-		values.setOpening(rnd.nextInt(100));
+		values.setCurrentOpening(rnd.nextInt(100));
 		data.put("data",arr);
-		data.put("opening",values.getOpening());
+		data.put("opening",values.getCurrentOpening());
 		data.put("status", values.getState());
 
 		routingContext.response()
