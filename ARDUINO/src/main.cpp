@@ -44,9 +44,10 @@ void loop() {
         }
             
         if(pot->hasChanged()) {
-            Serial.println("Valvola aperta al: ");
+            Serial.print("Valvola aperta al: ");
             Serial.print(pot->getPercentage());
             Serial.print("%");
+            Serial.println("");
             int inputPercentage = pot->getPercentage();
             int angle = map(inputPercentage, 0, 100, 0, 90);
             servo->setPosition(angle);
