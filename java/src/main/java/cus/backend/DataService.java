@@ -4,8 +4,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
-import cus.Pair;
 import cus.data.DataPoint;
+import cus.data.Pair;
 import cus.data.State;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerRequest;

@@ -5,8 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import cus.Pair;
-
 public class DataPoint {
 	private final List<Pair<Double,Calendar>> data = new LinkedList<>();
 	private final int size;
