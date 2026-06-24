@@ -107,7 +107,7 @@ public class DataService extends AbstractVerticle {
 		values.setCurrentOpening(rnd.nextInt(100));
 		data.put("data",arr);
 		data.put("opening",values.getCurrentOpening());
-		data.put("status", values.getState());
+		data.put("status", values.getState().toString());
 
 		routingContext.response()
 			.putHeader("content-type", "application/json")
