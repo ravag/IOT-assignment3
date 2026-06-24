@@ -23,8 +23,8 @@ public class DataService extends AbstractVerticle {
 	private DataPoint values;
 	private Random rnd = new Random();
 	
-	public DataService(int port) {
-		values = new DataPoint(10, 0, State.AUTOMATIC,0);		
+	public DataService(int port, DataPoint values) {
+		this.values = values;		
 		this.port = port;
 	}
 
@@ -95,7 +95,7 @@ public class DataService extends AbstractVerticle {
 	
 	private void handleGetData(RoutingContext routingContext) {
 		JsonArray arr = new JsonArray();
-		values.addData(new Pair<>(rnd.nextDouble(),Calendar.getInstance()));
+		values.addData(rnd.nextFloat());
 
 		for (Pair<Double,Calendar> p: values.getData()) {
 			JsonObject data = new JsonObject();
