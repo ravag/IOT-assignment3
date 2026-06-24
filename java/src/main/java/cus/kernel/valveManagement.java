@@ -29,6 +29,7 @@ public class valveManagement extends Thread{
     }
 
     public void run() {
+        serial.connect();
         while (!stopped) {
             if (data.getState() != Mode.AUTOMATIC) {
                 //mandare all'arduino l'apertura dell'operatore sul sito
@@ -105,6 +106,7 @@ public class valveManagement extends Thread{
                 }
             }
         }
+        serial.disconnect();
     }
 
     public void terminate() {
