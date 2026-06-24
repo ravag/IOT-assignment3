@@ -13,11 +13,12 @@ class StatoAcqua {
 
 public class SimpleSubscriber extends Thread{
 
-    String broker = "tcp://broker.mqtt-dashboard.com";
-    String clientId = "ESP-Project-" + System.currentTimeMillis();
-    String topic = "ESP-Project";
+    private final String broker = "tcp://broker.mqtt-dashboard.com";
+    private final String clientId = "ESP-Project-" + System.currentTimeMillis();
+    private final String topic = "ESP-Project";
     private MqttClient client;
     private DataPoint data;
+    private boolean stopped;
 
     public SimpleSubscriber(DataPoint data) throws Exception{
         this.client = new MqttClient(broker, clientId);
@@ -71,11 +72,17 @@ public class SimpleSubscriber extends Thread{
 
 
             // Keep the program running to listen for messages
-            Thread.sleep(60000);
+            while (!stopped) {
+                Thread.sleep(500);
+            }
             client.disconnect();
             client.close();
         } catch (Exception e) {
             System.err.println(e);
         }
+    }
+
+    public void terminate() {
+        this.stopped = true;
     }
 }
