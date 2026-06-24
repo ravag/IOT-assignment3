@@ -30,6 +30,7 @@ public class valveManagement extends Thread{
     }
 
     public void run() {
+        serial.connect();
         while (!stopped) {
             response = serial.readResponse();
             if (response != "") {
@@ -110,6 +111,7 @@ public class valveManagement extends Thread{
                 }
             }
         }
+        serial.disconnect();
     }
 
     public void terminate() {
