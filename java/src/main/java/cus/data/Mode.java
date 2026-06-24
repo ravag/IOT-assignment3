@@ -1,13 +1,13 @@
 package cus.data;
 
-public enum State {
+public enum Mode {
     MANUAL("MANUAL"),
     AUTOMATIC("AUTOMATIC"),
     UNCONNECTED("UNCONNECTED");
 
     private String name;
 
-    private State(String name) {
+    private Mode(String name) {
         this.name = name;
     }
 

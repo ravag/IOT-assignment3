@@ -1,12 +1,11 @@
 package cus.backend;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Random;
 
 import cus.data.DataPoint;
 import cus.data.Pair;
-import cus.data.State;
+import cus.data.Mode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -56,7 +55,7 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			values.setState(values.getState().equals(State.UNCONNECTED) ? State.UNCONNECTED : State.valueOf(res.getString("state")));
+			values.setState(values.getState().equals(Mode.UNCONNECTED) ? Mode.UNCONNECTED : Mode.valueOf(res.getString("state")));
 			log("Received new status: " + res.getString("state"));
 			JsonObject data = new JsonObject();
 			data.put("state",values.getState().toString());
@@ -81,16 +80,8 @@ public class DataService extends AbstractVerticle {
 		if (res == null) {
 			sendError(400, response);
 		} else {
-			float value = res.getFloat("value");
-			String place = res.getString("place");
-			long time = System.currentTimeMillis();
-			
-			/* values.addLast(new DataPoint(value, time, place));
-			if (values.size() > MAX_SIZE) {
-				values.removeFirst();
-			} */
-			
-			log("New value: " + value + " from " + place + " on " + new Date(time));
+			values.setOpeningObjective(res.getInteger("open"));
+			log("New value: " + values.getOpeningObjective());
 			response.setStatusCode(200).end();
 		}
 	}
