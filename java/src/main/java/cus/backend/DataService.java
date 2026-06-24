@@ -95,7 +95,6 @@ public class DataService extends AbstractVerticle {
 	
 	private void handleGetData(RoutingContext routingContext) {
 		JsonArray arr = new JsonArray();
-		values.addData(rnd.nextFloat());
 
 		for (Pair<Double,Calendar> p: values.getData()) {
 			JsonObject data = new JsonObject();

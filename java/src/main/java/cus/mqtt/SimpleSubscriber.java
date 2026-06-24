@@ -41,6 +41,11 @@ public class SimpleSubscriber extends Thread{
 
                 //Estraggo solo il valore dell'acqua
                 statoAttuale.valore = Float.parseFloat(payload.replace("Valore acqua: ", "").trim());
+
+                if (statoAttuale.valore != -100) {
+                    data.addData(statoAttuale.valore);
+                    System.out.println("Valore: " + statoAttuale.valore);
+                }
                 
             }
 
@@ -64,9 +69,6 @@ public class SimpleSubscriber extends Thread{
 
             System.out.println("Subscribed to topic: " + topic);
 
-            if (statoAttuale.valore != -100) {
-                data.addData(statoAttuale.valore);
-            }
 
             // Keep the program running to listen for messages
             Thread.sleep(60000);
