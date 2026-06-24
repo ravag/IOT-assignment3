@@ -48,8 +48,9 @@ public class DataPoint {
 		this.state = state;
 	}
 
-	public synchronized void addData(Pair<Double,Calendar> newData) {
-		data.addLast(newData);
+	public synchronized void addData(Float newData) {
+		Double value = (double)newData;
+		data.addLast(new Pair<Double, Calendar>(value, Calendar.getInstance()));
 		data.removeFirst();
 	}
 	
