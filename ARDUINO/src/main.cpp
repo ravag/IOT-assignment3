@@ -11,10 +11,14 @@ ServoMotorImpl* servo;
 PotImpl* pot;
 LiquidCrystal_I2C* lcd;
 
-bool isValveOn = false;
+enum SystemMode { AUTOMATIC, MANUAL, UNCONNECTED };
+SystemMode currentMode = AUTOMATIC;
+
 bool oldValveState = false;
 
 void updateLCD();
+void checkSerialIncoming();
+void sendDataToCUS();
 
 void setup() {
     Serial.begin(9600);
@@ -29,80 +33,170 @@ void setup() {
     lcd->clear();
     
     updateLCD();
+    sendDataToCUS();
 
-    Serial.println("-- Serial Initialized correctly --");
+    Serial.println("[DEBUG]: -- Serial Initialized correctly --");
 }
 
 void loop() {
-    if(button->isPressed()) {
-        Serial.println("Premuto");
+    //Controllo se sono arrivati messaggi dal CUS
+    checkSerialIncoming();
+
+    //Controllo l'input locale del pulsante fisico
+    if(currentMode != UNCONNECTED && button->isPressed()) {
+        Serial.println("[DEBUG]: Pressed local button");
         button->resetButton();
-        isValveOn = !isValveOn;
+        
+        if(currentMode == AUTOMATIC) {
+            currentMode = MANUAL;
+        } else if(currentMode == MANUAL) {
+            currentMode = AUTOMATIC;
+        }
 
         lcd->clear();
         updateLCD();
+        sendDataToCUS();
     } 
 
-    if (isValveOn) {
-        if(!oldValveState) {
-            servo->on();
-            int inputPercentage = pot->getPercentage();
-            int angle = map(inputPercentage, 0, 100, 0, 90);
-            servo->setPosition(angle);
-            Serial.println("Modalità MANUALE Attiva");
-            oldValveState = true;
-            lcd->clear();
-            updateLCD();
+    //Logica degli stati hardware
+    switch(currentMode) {
+        
+        case MANUAL:
+            if(!oldValveState) {
+                servo->on();
+                int inputPercentage = pot->getPercentage();
+                int angle = map(inputPercentage, 0, 100, 0, 90);
+                servo->setPosition(angle);
+                Serial.println("[DEBUG]: MANUAL Mode Activated");
+                oldValveState = true;
+                lcd->clear();
+                updateLCD();
+                sendDataToCUS();
+            }
+            
+            if(pot->hasChanged()) {
+                Serial.print("[WCS]: Valve open: ");
+                Serial.print(pot->getPercentage());
+                Serial.print("%");
+                Serial.println("");
+                int inputPercentage = pot->getPercentage();
+                int angle = map(inputPercentage, 0, 100, 0, 90);
+                servo->setPosition(angle);
+                updateLCD();
+                sendDataToCUS();
+                delay(50);
+            } 
 
-        }
-            
-        if(pot->hasChanged()) {
-            Serial.print("Valvola aperta al: ");
-            Serial.print(pot->getPercentage());
-            Serial.print("%");
-            Serial.println("");
-            int inputPercentage = pot->getPercentage();
-            int angle = map(inputPercentage, 0, 100, 0, 90);
-            servo->setPosition(angle);
-            updateLCD();
-            delay(50);
-            
-        } 
-    } else {
-        if(servo->isOn()) {
-            servo->setPosition(0);
-            Serial.println("Valvola riposizionata in posizione 0");
-            delay(300);
-            servo->off();
-            Serial.println("Modalità MANUALE Disattivata\nModalità AUTOMATICA Attivata");
+            break;
+
+        case AUTOMATIC:
+            if(servo->isOn() || oldValveState) {
+                servo->setPosition(0);
+                Serial.println("[DEBUG]: Valve closed");
+                delay(300);
+                servo->off(); // per debug in realtà il servo non si spegne mai finché è acceso
+                Serial.println("[DEBUG]: AUTOMATIC Mode Activated");
+                oldValveState = false;
+
+                lcd->clear();
+                updateLCD();
+                sendDataToCUS();
+            }
+            break;
+
+        case UNCONNECTED:
+            Serial.println("[DEBUG]: Connection Lost! Switching to MANUAL Mode");
+            currentMode = MANUAL;
+
             oldValveState = false;
 
             lcd->clear();
             updateLCD();
-        }
+            sendDataToCUS();
+            break;
     }
+
     delay(20);
 }
 
 void updateLCD() {
     lcd->setCursor(0, 0);
-    if(isValveOn) {
+    if(currentMode == MANUAL) {
         lcd->print("Mode: MANUAL       ");
-    } else {
+    } else if(currentMode == AUTOMATIC) {
         lcd->print("Mode: AUTOMATIC    ");
+    } else if(currentMode == UNCONNECTED) {
+        lcd->print("Mode: UNCONNECTED  ");
     }
 
     lcd->setCursor(0, 1);
     lcd->print("Value: ");
 
-    if(isValveOn) {
+    if(currentMode == MANUAL) {
         lcd->print(pot->getPercentage());
-    } else {
+    } else if(currentMode == AUTOMATIC) {
         if(servo->isOn()) {
-            lcd->print("Apertura automatica salvata in una variabile in futuro");
+            lcd->print("AUTOMATIC Mode Active");
         } else {
-            lcd->print("0");
+            lcd->print("0%    ");
+        }
+    } else if(currentMode == UNCONNECTED) {
+        lcd->print("Switching...");
+    }
+}
+
+void checkSerialIncoming() {
+    if(Serial.available() > 0) {
+        String msg = Serial.readStringUntil('\n');
+        msg.trim();
+
+        int modeIndex = msg.indexOf("MODE:");
+
+        if(modeIndex != -1) {
+            char modeChar = msg.charAt(modeIndex + 6);
+
+            if(modeChar == 'M' && currentMode != MANUAL) {
+                currentMode = MANUAL;
+                Serial.println("[DEBUG]: Switch to MANUAL from Serial");
+                lcd->clear();
+                updateLCD();
+                sendDataToCUS();
+            } else if(modeChar == 'A' && currentMode != AUTOMATIC) {
+                currentMode = AUTOMATIC;
+                Serial.println("[DEBUG]: Switch to AUTOMATIC from Serial");
+                lcd->clear();
+                updateLCD();
+                sendDataToCUS();
+            } else if(modeChar == 'U') {
+                currentMode = UNCONNECTED;
+                Serial.println("[DEBUG]: Switch to UNCONNECTED from Serial");
+                lcd->clear();
+                updateLCD();
+                sendDataToCUS();
+            }
         }
     }
-    lcd->print("%   ");
+}
+
+void sendDataToCUS() {
+    String modeString = "";
+    int currentOpening = 0;
+
+    if(currentMode == MANUAL) {
+        modeString = "MANUAL";
+        currentOpening = pot->getPercentage();
+    } else if(currentMode == AUTOMATIC) {
+        modeString = "AUTOMATIC";
+        currentOpening = 0;
+    } else {
+        modeString = "UNCONNECTED";
+        currentOpening = 0;
+    }
+
+    Serial.print("MODE: ");
+    Serial.println(modeString);
+
+    Serial.print("OPEN: ");
+    Serial.print(currentOpening);
+    Serial.println("%");
 }
