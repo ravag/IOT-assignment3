@@ -10,8 +10,8 @@ Sonar* pSonar = new Sonar(12,11,150000);
 
 /* wifi network info */
 
-const char* ssid = "EOLO - FRITZ!Box 7430 NX";
-const char* password = "15147241081514237310";
+const char* ssid = "OPPO A73 5G";
+const char* password = "daniele04";
 
 /* MQTT server address */
 const char* mqtt_server = "broker.mqtt-dashboard.com";
@@ -95,10 +95,10 @@ void loop() {
     unsigned long now = millis();
     if (now - lastMsgTime > 10000) {
         lastMsgTime = now;
-        value = pSonar->getDistance();
+        value = pSonar->getDistance() || "10";
 
         /* creating a msg in the buffer */
-        snprintf(msg, MSG_BUFFER_SIZE, "Valore acqua: ", value);
+        snprintf(msg, MSG_BUFFER_SIZE, "Valore acqua: %d", value);
 
         Serial.println(String("Publishing message: ") + msg);
 
