@@ -58,5 +58,9 @@ public class DataPoint {
 		return List.copyOf(data);
 	}
 
+	public synchronized double getWaterLevel() {
+		return data.getLast().a();
+	}
+
 	
 }
