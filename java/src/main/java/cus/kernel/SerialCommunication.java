@@ -120,10 +120,12 @@ public class SerialCommunication {
         }
     }
 
-    public void readResponse() {
+    public String readResponse() {
         if (input != null && input.hasNextLine()) {
             String response = input.nextLine();
             System.out.println("[Ricevuto da Arduino]: " + response);
+            return response;
         }
+        return "";
     }
 }
