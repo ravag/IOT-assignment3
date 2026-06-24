@@ -1,15 +1,31 @@
 package cus.mqtt;
 
 import org.eclipse.paho.client.mqttv3.*;
+import cus.data.*;
 
-public class SimpleSubscriber {
+class StatoAcqua {
+    float valore;
+
+    public StatoAcqua() {
+        valore = -100;
+    }
+}
+
+public class SimpleSubscriber extends Thread{
+
+    String broker = "tcp://broker.mqtt-dashboard.com";
+    String clientId = "ESP-Project-" + System.currentTimeMillis();
+    String topic = "ESP-Project";
+    private MqttClient client;
+    private DataPoint data;
+
+    public SimpleSubscriber(DataPoint data) throws Exception{
+        this.client = new MqttClient(broker, clientId);
+        this.data = data; 
+    }
     
-    public static void main(String[] args) throws Exception {
-        String broker = "tcp://broker.mqtt-dashboard.com";
-        String clientId = "ESP-Project-" + System.currentTimeMillis();
-        String topic = "ESP-Project";
-
-        MqttClient client = new MqttClient(broker, clientId);
+    public void run() {
+        StatoAcqua statoAttuale = new StatoAcqua();
 
         //Callback to handle messages and connection events
         client.setCallback(new MqttCallback() {
@@ -21,6 +37,16 @@ public class SimpleSubscriber {
             @Override
             public void messageArrived(String topic, MqttMessage message) {
                 System.out.println("Received message on topic " + topic + ": " + new String(message.getPayload()));
+                String payload = new String(message.getPayload());
+
+                //Estraggo solo il valore dell'acqua
+                statoAttuale.valore = Float.parseFloat(payload.replace("Valore acqua: ", "").trim());
+
+                if (statoAttuale.valore != -100) {
+                    data.addData(statoAttuale.valore);
+                    System.out.println("Valore: " + statoAttuale.valore);
+                }
+                
             }
 
             @Override
@@ -29,22 +55,27 @@ public class SimpleSubscriber {
             }
         });
 
-        client.connect();
+        try {
+            client.connect();
 
-         /*
-         * Subscribing - second param is the QoS (from broker to receiver)
-         * 
-         * - 0: at most once (minimum)
-         * - 1: at least once
-         * - 2: exactly once (maximum)
-         */
-        client.subscribe(topic, 1);
+            /*
+            * Subscribing - second param is the QoS (from broker to receiver)
+            * 
+            * - 0: at most once (minimum)
+            * - 1: at least once
+            * - 2: exactly once (maximum)
+            */
+            client.subscribe(topic, 1);
 
-        System.out.println("Subscribed to topic: " + topic);
+            System.out.println("Subscribed to topic: " + topic);
 
-        // Keep the program running to listen for messages
-        Thread.sleep(60000);
-        client.disconnect();
-        client.close();
+
+            // Keep the program running to listen for messages
+            Thread.sleep(60000);
+            client.disconnect();
+            client.close();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
     }
 }
