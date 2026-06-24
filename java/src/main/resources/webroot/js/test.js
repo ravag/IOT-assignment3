@@ -5,8 +5,9 @@ const switch_mode_button = document.getElementById("switch_mode");
 const open_slider = document.getElementById("opening");
 const openingText = document.getElementById("openingText");
 const statusText = document.getElementById("statusText");
+const setOpeningBtn = document.getElementById("setOpening")
 
-document.getElementById("setOpening").addEventListener("click",function(event){
+setOpeningBtn.addEventListener("click",function(event){
     event.preventDefault();
 })
 //Variabile che indica ogni quanti millisecondi si faccia un aggiornamento automatico
@@ -28,9 +29,13 @@ switch_mode_button.addEventListener("click",async function(event) {
         if (!response.ok) {
             throw new Error("errore di connessione: " + response.status)
         }
+        const json = await response.json();
+        systemStatus = json["state"];
     } catch (error) {
         console.log(error);
+        systemStatus = "NOT AVAILABLE";
     }
+    buttonHandler();
 });
 
 //2 modi per fare grafici, bisogna decidere, io preferisco usare Ploty
@@ -171,23 +176,27 @@ function buttonHandler() {
         case "UNCONNECTED":
             switch_mode_button.disabled = true;
             open_slider.disabled = true;
+            setOpeningBtn.disabled = true;
             break;
 
         case "MANUAL":
             switch_mode_button.disabled = false;
             open_slider.disabled = false;
+            setOpeningBtn.disabled = false;
             switch_mode_button.innerHTML = "AUTOMATIC";
             break;
 
         case "AUTOMATIC":
             switch_mode_button.disabled = false;
             open_slider.disabled = true;
+            setOpeningBtn.disabled = true;
             switch_mode_button.innerHTML = "MANUAL";
             break;
 
         default:
             switch_mode_button.disabled = true;
             open_slider.disabled = true;
+            setOpeningBtn.disabled = true;
             break;
     }
 }
