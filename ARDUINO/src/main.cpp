@@ -1,39 +1,67 @@
 #include "Arduino.h"
 #include "devices/PotImpl.h"
+#include "devices/ButtonImpl.h"
+#include "devices/ServoMotorImpl.h"
+#include "devices/PotImpl.h"
 
-// Creiamo un puntatore all'interfaccia Pot
-Pot* mioPotenziometro;
+const int BUTTON_PIN = 3;
+const int SERVO_PIN = 6;
+const int POT_PIN = A0;
+
+ButtonImpl* button;
+ServoMotorImpl* servo;
+PotImpl* pot;
+
+bool isValveOn = false;
+bool oldValveState = false;
 
 void setup() {
-    // Inizializza la comunicazione seriale a 9600 baud
     Serial.begin(9600);
-    while (!Serial) {
-        ; // Aspetta che la porta seriale si connetta (necessario per alcune schede come Leonardo/Micro)
-    }
 
-    // Istanziamo il potenziometro sul pin analogico A0
-    mioPotenziometro = new PotImpl(A0);
-    
-    Serial.println("--- Test Potenziometro Avviato ---");
-    Serial.println("Gira il potenziometro per vedere i cambiamenti...");
+    button = new ButtonImpl(BUTTON_PIN);
+    servo = new ServoMotorImpl(SERVO_PIN);
+    pot = new PotImpl(POT_PIN);
+
+    Serial.println("-- Serial Initialized correctly --");
 }
 
 void loop() {
-    // Controlliamo SE il valore è cambiato oltre la soglia di tolleranza
-    if (mioPotenziometro->hasChanged()) {
-        
-        // Leggiamo sia il valore grezzo che la percentuale
-        int valoreGrezzo = mioPotenziometro->getValue();
-        int percentuale = mioPotenziometro->getPercentage();
-        
-        // Stampiamo i dati sul Serial Monitor
-        Serial.print("Cambiamento rilevato! -> Valore ADC: ");
-        Serial.print(valoreGrezzo);
-        Serial.print(" | Percentuale: ");
-        Serial.print(percentuale);
-        Serial.println("%");
-    }
+    if(button->isPressed()) {
+        Serial.println("Premuto");
+        button->resetButton();
+        isValveOn = !isValveOn;
+    } 
 
-    // Un piccolissimo delay per non sovraccaricare la CPU di Arduino
-    delay(50);
+    if (isValveOn) {
+        if(!oldValveState) {
+            servo->on();
+            int inputPercentage = pot->getPercentage();
+            int angle = map(inputPercentage, 0, 100, 0, 90);
+            servo->setPosition(angle);
+            Serial.println("Modalità MANUALE Attiva");
+            oldValveState = true;
+
+        }
+            
+        if(pot->hasChanged()) {
+            Serial.println("Valvola aperta al: ");
+            Serial.print(pot->getPercentage());
+            Serial.print("%");
+            int inputPercentage = pot->getPercentage();
+            int angle = map(inputPercentage, 0, 100, 0, 90);
+            servo->setPosition(angle);
+            delay(50);
+            
+        } 
+    } else {
+        if(servo->isOn()) {
+            servo->setPosition(0);
+            Serial.println("Valvola riposizionata in posizione 0");
+            delay(300);
+            servo->off();
+            Serial.println("Modalità MANUALE Disattivata\nModalità AUTOMATICA Attivata");
+            oldValveState = false;
+        }
+    }
+    delay(20);
 }
