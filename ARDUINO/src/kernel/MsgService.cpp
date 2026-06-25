@@ -36,9 +36,12 @@ void MsgServiceClass::sendMsg(const String& msg){
 void serialEvent() {
   /* reading the content */
   while (Serial.available()) {
-    String msg = Serial.readStringUntil('\n');
-    msg.trim();
-    MsgService.currentMsg = new Msg(content);
-    MsgService.msgAvailable = true;      
+    char ch = (char) Serial.read();
+    if (ch == '\n'){
+      MsgService.currentMsg = new Msg(content);
+      MsgService.msgAvailable = true;      
+    } else {
+      content += ch;      
+    }    
   }
 }

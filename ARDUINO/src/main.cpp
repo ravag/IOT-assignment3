@@ -52,7 +52,7 @@ void setup() {
     updateLCD();
     sendDataToCUS();
 
-    Serial.println("[DEBUG]: -- Serial Initialized correctly --");
+    Serial.println("[DEBUG]: -- Serial Initialized correctly -- READY");
 }
 
 void loop() {
