@@ -5,6 +5,7 @@
 #include "devices/PotImpl.h"
 #include "LiquidCrystal_I2C.h"
 #include "config.h"
+#include "tasks/MainTask.h"
 
 
 /*
@@ -25,11 +26,10 @@ ButtonImpl* button;
 ServoMotorImpl* servo;
 PotImpl* pot;
 LiquidCrystal_I2C* lcd;
+MainTask* mainTask;
 
-enum SystemMode { AUTOMATIC, MANUAL, UNCONNECTED };
 SystemMode currentMode = AUTOMATIC;
-
-bool oldValveState = false;
+bool isServoConfiguredForManual = false;
 
 void updateLCD();
 void checkSerialIncoming();
@@ -42,6 +42,8 @@ void setup() {
     servo = new ServoMotorImpl(SERVO_PIN);
     pot = new PotImpl(POT_PIN);
     lcd = new LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
+
+    mainTask = new MainTask(servo, pot, &currentMode, &isServoConfiguredForManual);
 
     lcd->init();
     lcd->backlight();
@@ -62,56 +64,35 @@ void loop() {
         Serial.println("[DEBUG]: Pressed local button");
         button->resetButton();
         
-        if(currentMode == AUTOMATIC) {
-            currentMode = MANUAL;
-        } else if(currentMode == MANUAL) {
-            currentMode = AUTOMATIC;
-        }
+        currentMode = (currentMode == AUTOMATIC) ? MANUAL : AUTOMATIC;
 
         lcd->clear();
         updateLCD();
         sendDataToCUS();
     } 
 
+    mainTask->tick();
+
     //Logica degli stati hardware
     switch(currentMode) {
         
         case MANUAL:
-            if(!oldValveState) {
-                servo->on();
-                int inputPercentage = pot->getPercentage();
-                int angle = map(inputPercentage, 0, 100, 0, 90);
-                servo->setPosition(angle);
-                Serial.println("[DEBUG]: MANUAL Mode Activated");
-                oldValveState = true;
+            if(pot->hasChanged()) {
                 lcd->clear();
                 updateLCD();
                 sendDataToCUS();
-            }
-            
-            if(pot->hasChanged()) {
-                Serial.print("[WCS]: Valve open: ");
-                Serial.print(pot->getPercentage());
-                Serial.print("%");
-                Serial.println("");
-                int inputPercentage = pot->getPercentage();
-                int angle = map(inputPercentage, 0, 100, 0, 90);
-                servo->setPosition(angle);
-                updateLCD();
-                sendDataToCUS();
-                delay(50);
             } 
 
             break;
 
         case AUTOMATIC:
-            if(servo->isOn() || oldValveState) {
+            if(servo->isOn() || isServoConfiguredForManual) {
                 servo->setPosition(0);
                 Serial.println("[DEBUG]: Valve closed");
                 delay(300);
                 servo->off(); // per debug in realtà il servo non si spegne mai finché è acceso
                 Serial.println("[DEBUG]: AUTOMATIC Mode Activated");
-                oldValveState = false;
+                isServoConfiguredForManual = false;
 
                 lcd->clear();
                 updateLCD();
@@ -123,7 +104,7 @@ void loop() {
             Serial.println("[DEBUG]: Connection Lost! Switching to MANUAL Mode");
             currentMode = MANUAL;
 
-            oldValveState = false;
+            isServoConfiguredForManual = false;
 
             lcd->clear();
             updateLCD();
