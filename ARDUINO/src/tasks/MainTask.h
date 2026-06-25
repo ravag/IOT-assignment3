@@ -14,6 +14,14 @@ class MainTask {
         PotImpl* pot;
         SystemMode* currentMode;
         bool* isServoConfiguredForManual;
+
+        unsigned long timeInState;
+        int currentAngle;
+        int startAngle;
+        int targetAngle;
+
+        unsigned long timeToMove;
+        const unsigned long MS_PER_DEGREE = 55;
     
     public:
         MainTask(ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* valveState);

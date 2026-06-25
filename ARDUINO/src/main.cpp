@@ -7,21 +7,6 @@
 #include "config.h"
 #include "tasks/MainTask.h"
 
-
-/*
-void LandingTask::openDoor(){
-    long dt = millis() - timeInState;
-    currentPosition = dt / TIME_TO_OPEN (=5000 );
-    pMotor->setPosition(currentPosition * 90);
-
-    if(pMotor->getPosition() >= 90){
-        pMotor->off();
-    }
-}
-*/
-
-
-
 ButtonImpl* button;
 ServoMotorImpl* servo;
 PotImpl* pot;
