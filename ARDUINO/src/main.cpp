@@ -6,6 +6,21 @@
 #include "LiquidCrystal_I2C.h"
 #include "config.h"
 
+
+/*
+void LandingTask::openDoor(){
+    long dt = millis() - timeInState;
+    currentPosition = dt / TIME_TO_OPEN (=5000 );
+    pMotor->setPosition(currentPosition * 90);
+
+    if(pMotor->getPosition() >= 90){
+        pMotor->off();
+    }
+}
+*/
+
+
+
 ButtonImpl* button;
 ServoMotorImpl* servo;
 PotImpl* pot;
@@ -21,7 +36,7 @@ void checkSerialIncoming();
 void sendDataToCUS();
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     button = new ButtonImpl(BUTTON_PIN);
     servo = new ServoMotorImpl(SERVO_PIN);
