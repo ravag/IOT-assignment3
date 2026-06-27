@@ -39,6 +39,7 @@ void ReceiveMsgTask::tick() {
             i++;
         }
         int n = content.toInt();
-        MsgService.sendMsg(content);
+        //Istruzione di debug, da rimuovere
+        //MsgService.sendMsg(content);
     }
 }
