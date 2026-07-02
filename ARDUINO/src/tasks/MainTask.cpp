@@ -1,9 +1,8 @@
 #include "MainTask.h"
 
-MainTask::MainTask(ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* isManualInit) {
+MainTask::MainTask(ServoMotorImpl* servo, PotImpl* pot, bool* isManualInit) {
     this->servo = servo;
     this->pot = pot;
-    this->currentMode = mode;
     this->isServoConfiguredForManual = isManualInit;
 
     this->currentAngle = 0;
@@ -14,7 +13,7 @@ MainTask::MainTask(ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* 
 }
 
 void MainTask::tick() {
-    if(*currentMode == MANUAL) {
+    if(state == MANUAL) {
         if(!(*isServoConfiguredForManual)) {
             servo->on();
             Serial.println("[DEBUG]: MANUAL Mode Activated");

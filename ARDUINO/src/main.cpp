@@ -6,14 +6,17 @@
 #include "LiquidCrystal_I2C.h"
 #include "config.h"
 #include "tasks/MainTask.h"
+#include "SystemGlobals.h"
+#include "kernel/Scheduler.h"
+#include "tasks/ReceiveMsgTask.h"
+#include "tasks/SendMsgTask.h"
 
 ButtonImpl* button;
 ServoMotorImpl* servo;
 PotImpl* pot;
 LiquidCrystal_I2C* lcd;
-MainTask* mainTask;
+Scheduler sched;
 
-SystemMode currentMode = AUTOMATIC;
 bool isServoConfiguredForManual = false;
 
 void updateLCD();
@@ -28,19 +31,29 @@ void setup() {
     pot = new PotImpl(POT_PIN);
     lcd = new LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
 
-    mainTask = new MainTask(servo, pot, &currentMode, &isServoConfiguredForManual);
-
     lcd->init();
     lcd->backlight();
     lcd->clear();
-    
-    updateLCD();
-    sendDataToCUS();
+
+    Task* mainTask = new MainTask(servo, pot, &isServoConfiguredForManual);
+    mainTask->init(500);
+    Task* send = new SendMsgTask(pot);
+    send->init(250);
+    Task* recv = new ReceiveMsgTask();
+    recv->init();
+    sched.addTask(recv);
+    sched.addTask(mainTask);
+    sched.addTask(send);
+    sched.init(250);
 
     Serial.println("[DEBUG]: -- Serial Initialized correctly -- READY");
 }
 
 void loop() {
+    sched.schedule();
+}
+
+/* void loop() {
     //Controllo se sono arrivati messaggi dal CUS
     checkSerialIncoming();
 
@@ -180,4 +193,4 @@ void sendDataToCUS() {
     Serial.print("OPEN: ");
     Serial.print(currentOpening);
     Serial.println("%");
-}
+} */

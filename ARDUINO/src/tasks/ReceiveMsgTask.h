@@ -3,8 +3,7 @@
 
 #include "kernel\Task.h"
 #include "kernel\MsgService.h"
-
-enum State {AUTOMATIC,MANUAL,UNCONNECTED};
+#include "SystemGlobals.h"
 
 class ReceiveMsgTask: public Task {
 
@@ -15,7 +14,6 @@ public:
 private:
     
     String msg;
-    State state;
 };
 
 extern int targetOpening;

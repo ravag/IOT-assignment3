@@ -5,26 +5,24 @@
 #include <Arduino.h>
 #include "devices/PotImpl.h"
 #include "devices/ServoMotorImpl.h"
+#include "SystemGlobals.h"
+#include "kernel/Task.h"
 
-enum SystemMode { AUTOMATIC, MANUAL, UNCONNECTED };
-
-class MainTask {
+class MainTask: public Task {
     private:
         ServoMotorImpl* servo;
         PotImpl* pot;
-        SystemMode* currentMode;
         bool* isServoConfiguredForManual;
 
         unsigned long timeInState;
         int currentAngle;
         int startAngle;
-        int targetAngle;
 
         unsigned long timeToMove;
         const unsigned long MS_PER_DEGREE = 55;
     
     public:
-        MainTask(ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* valveState);
+        MainTask(ServoMotorImpl* servo, PotImpl* pot, bool* valveState);
 
         void tick();
 };

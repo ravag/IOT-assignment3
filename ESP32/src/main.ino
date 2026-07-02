@@ -26,7 +26,7 @@ PubSubClient client(espClient);
 
 unsigned long lastMsgTime = 0;
 char msg[MSG_BUFFER_SIZE];
-int value = 0;
+float value = 0;
 
 void setup_wifi() {
     delay(10);
@@ -95,11 +95,11 @@ void loop() {
     unsigned long now = millis();
     if (now - lastMsgTime > 10000) {
         lastMsgTime = now;
-        value = random(0, 1000) / 10;
+        value = pSonar->getDistance();
         /* value = pSonar->getDistance() || "10"; */
 
         /* creating a msg in the buffer */
-        snprintf(msg, MSG_BUFFER_SIZE, "Valore acqua: %d", value);
+        snprintf(msg, MSG_BUFFER_SIZE, "Valore acqua: %f", value);
 
         Serial.println(String("Publishing message: ") + msg);
 

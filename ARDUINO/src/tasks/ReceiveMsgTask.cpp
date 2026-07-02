@@ -31,14 +31,14 @@ void ReceiveMsgTask::tick() {
             state = UNCONNECTED;
         }
         i += 7;
-        content += " ";
+        content = "";
         while (i < msg.length())
         {
             ch = msg[i];
             content += ch;
             i++;
         }
-        int n = content.toInt();
+        targetAngle = content.toInt();
         //Istruzione di debug, da rimuovere
         //MsgService.sendMsg(content);
     }
