@@ -123,7 +123,7 @@ void updateLCD() {
         lcd->print("%");
     } else if(currentMode == AUTOMATIC) {
         if(servo->isOn()) {
-            lcd->print("AUTOMATIC Mode Active");
+            Serial.println("[DEBUG]: AUTOMATIC Mode ON");
         } else {
             lcd->print("0%    ");
         }
