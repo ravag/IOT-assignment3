@@ -5,7 +5,6 @@ import cus.data.Mode;
 public class TestRecv extends Thread {
     SerialCommunication serial;
     private boolean stopped = false;
-    private Mode mode;
     private String msg;
 
     public TestRecv(SerialCommunication serial) {
