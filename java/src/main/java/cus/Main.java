@@ -22,7 +22,7 @@ public class Main {
         DataPoint data = new DataPoint(10, 0, Mode.AUTOMATIC, 0);
         RunBackend backend = new RunBackend(data);
         SimpleSubscriber subscriber = new SimpleSubscriber(data);
-        valveManagement valve = new valveManagement(new SerialCommunication("COM3", 115200), data);
+        //valveManagement valve = new valveManagement(new SerialCommunication("COM3", 115200), data);
         subscriber.start();
         backend.start();
         //valve.start();
@@ -32,7 +32,7 @@ public class Main {
         btn.addActionListener(e -> {
             backend.terminate();
             subscriber.terminate();
-            valve.terminate();
+            //valve.terminate();
         });
         btn.setSize(400, 200);
         frame.add(btn);
@@ -46,12 +46,12 @@ public class Main {
             public void windowClosing(WindowEvent e) {
                 backend.terminate();
                 subscriber.terminate();
-                valve.terminate();
+                //valve.terminate();
             }
         };
         frame.addWindowListener(l);
 
-        while (subscriber.getState() != State.TERMINATED || backend.verticleStatus() || valve.getState() != State.TERMINATED) {
+        while (subscriber.getState() != State.TERMINATED || backend.verticleStatus()){ //|| valve.getState() != State.TERMINATED) {
             Thread.sleep(1000);
         }
         System.exit(0);
