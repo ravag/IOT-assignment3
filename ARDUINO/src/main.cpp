@@ -16,10 +16,6 @@ MainTask* mainTask;
 SystemMode currentMode = AUTOMATIC;
 bool isServoConfiguredForManual = false;
 
-void updateLCD();
-void checkSerialIncoming();
-void sendDataToCUS();
-
 void setup() {
     Serial.begin(115200);
 
@@ -30,7 +26,7 @@ void setup() {
     pot = new PotImpl(POT_PIN);
     lcd = new LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
 
-    mainTask = new MainTask(servo, pot, &currentMode, &isServoConfiguredForManual);
+    mainTask = new MainTask(lcd, servo, pot, &currentMode, &isServoConfiguredForManual);
 
     Serial.println("[DEBUG]: Provo inizializzazione LCD...");
 
@@ -38,41 +34,25 @@ void setup() {
     lcd->backlight();
     lcd->clear();
     
-    updateLCD();
-    sendDataToCUS();
-
     Serial.println("[DEBUG]: -- Serial Initialized correctly -- READY");
 }
 
 void loop() {
-    //Controllo se sono arrivati messaggi dal CUS
-    checkSerialIncoming();
-
-    //Controllo l'input locale del pulsante fisico
+//Controllo l'input locale del pulsante fisico
     if(currentMode != UNCONNECTED && button->isPressed()) {
         Serial.println("[DEBUG]: Pressed local button");
         button->resetButton();
         
         currentMode = (currentMode == AUTOMATIC) ? MANUAL : AUTOMATIC;
-
-        lcd->clear();
-        updateLCD();
-        sendDataToCUS();
     } 
 
     mainTask->tick();
 
     //Logica degli stati hardware
     switch(currentMode) {
-        
-        case MANUAL:
-            if(pot->hasChanged()) {
-                lcd->clear();
-                updateLCD();
-                sendDataToCUS();
-            } 
 
-            break;
+        case MANUAL:
+        break;
 
         case AUTOMATIC:
             if(servo->isOn() || isServoConfiguredForManual) {
@@ -82,10 +62,6 @@ void loop() {
                 servo->off(); // per debug in realtà il servo non si spegne mai finché è acceso
                 Serial.println("[DEBUG]: AUTOMATIC Mode Activated");
                 isServoConfiguredForManual = false;
-
-                lcd->clear();
-                updateLCD();
-                sendDataToCUS();
             }
             break;
 
@@ -95,95 +71,9 @@ void loop() {
 
             isServoConfiguredForManual = false;
 
-            lcd->clear();
-            updateLCD();
-            sendDataToCUS();
             break;
     }
 
     delay(20);
 }
 
-void updateLCD() {
-    lcd->clear();
-    lcd->setCursor(0, 0);
-    if(currentMode == MANUAL) {
-        lcd->print("Mode: MANUAL       ");
-    } else if(currentMode == AUTOMATIC) {
-        lcd->print("Mode: AUTOMATIC    ");
-    } else if(currentMode == UNCONNECTED) {
-        lcd->print("Mode: UNCONNECTED  ");
-    }
-
-    lcd->setCursor(0, 1);
-    lcd->print("Value: ");
-
-    if(currentMode == MANUAL) {
-        lcd->print(pot->getPercentage());
-        lcd->print("%");
-    } else if(currentMode == AUTOMATIC) {
-        if(servo->isOn()) {
-            Serial.println("[DEBUG]: AUTOMATIC Mode ON");
-        } else {
-            lcd->print("0%    ");
-        }
-    } else if(currentMode == UNCONNECTED) {
-        lcd->print("Switching...");
-    }
-}
-
-void checkSerialIncoming() {
-    if(Serial.available() > 0) {
-        String msg = Serial.readStringUntil('\n');
-        msg.trim();
-
-        int modeIndex = msg.indexOf("MODE:");
-
-        if(modeIndex != -1) {
-            char modeChar = msg.charAt(modeIndex + 6);
-
-            if(modeChar == 'M' && currentMode != MANUAL) {
-                currentMode = MANUAL;
-                Serial.println("[DEBUG]: Switch to MANUAL from Serial");
-                lcd->clear();
-                updateLCD();
-                sendDataToCUS();
-            } else if(modeChar == 'A' && currentMode != AUTOMATIC) {
-                currentMode = AUTOMATIC;
-                Serial.println("[DEBUG]: Switch to AUTOMATIC from Serial");
-                lcd->clear();
-                updateLCD();
-                sendDataToCUS();
-            } else if(modeChar == 'U') {
-                currentMode = UNCONNECTED;
-                Serial.println("[DEBUG]: Switch to UNCONNECTED from Serial");
-                lcd->clear();
-                updateLCD();
-                sendDataToCUS();
-            }
-        }
-    }
-}
-
-void sendDataToCUS() {
-    String modeString = "";
-    int currentOpening = 0;
-
-    if(currentMode == MANUAL) {
-        modeString = "MANUAL";
-        currentOpening = pot->getPercentage();
-    } else if(currentMode == AUTOMATIC) {
-        modeString = "AUTOMATIC";
-        currentOpening = 0;
-    } else {
-        modeString = "UNCONNECTED";
-        currentOpening = 0;
-    }
-
-    Serial.print("MODE: ");
-    Serial.println(modeString);
-
-    Serial.print("OPEN: ");
-    Serial.print(currentOpening);
-    Serial.println("%");
-}

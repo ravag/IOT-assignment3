@@ -1,13 +1,13 @@
 #include "MainTask.h"
 
-MainTask::MainTask(ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* isManualInit) {
+MainTask::MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* isManualInit) {
+    this->lcd = lcd;
     this->servo = servo;
     this->pot = pot;
     this->currentMode = mode;
     this->isServoConfiguredForManual = isManualInit;
 
     this->currentAngle = 0;
-    this->startAngle = 0;
     this->startAngle = 0;
     this->timeInState = 0;
     this->timeToMove = 0;
@@ -26,6 +26,8 @@ void MainTask::tick() {
             startAngle = currentAngle;
             timeInState = millis();
             timeToMove = 0;
+
+            updateLCD();
         }
 
         int potPercentage = pot->getPercentage();
@@ -44,6 +46,8 @@ void MainTask::tick() {
             if(timeToMove == 0) {
                 timeToMove = 1;
             }
+
+            updateLCD();
         }
 
         unsigned long dt = millis() - timeInState;
@@ -64,6 +68,38 @@ void MainTask::tick() {
         } else if(currentAngle != targetAngle) {
             currentAngle = targetAngle;
             servo->setPosition(currentAngle);
+
+            updateLCD();
         }
+    } else {
+        updateLCD();
+    }
+}
+
+void MainTask::updateLCD() {
+    lcd->clear();
+    lcd->setCursor(0, 0);
+    if(*currentMode == MANUAL) {
+        lcd->print("Mode: MANUAL       ");
+    } else if(*currentMode == AUTOMATIC) {
+        lcd->print("Mode: AUTOMATIC    ");
+    } else if (*currentMode == UNCONNECTED) {
+        lcd->print("Mode: UNCONNECTED  ");
+    }
+
+    lcd->setCursor(0, 1);
+    lcd->print("Value: ");
+
+    if(*currentMode == MANUAL) {
+        lcd->print(pot->getPercentage());
+        lcd->print("%");
+    } else if(*currentMode == AUTOMATIC) {
+        if(servo->isOn()) {
+            Serial.println("[DEBUG]: AUTOMATIC Mode ON");
+        } else {
+            lcd->print("0%    ");
+        }
+    } else if (*currentMode == UNCONNECTED) {
+        lcd->print("Switching...");
     }
 }

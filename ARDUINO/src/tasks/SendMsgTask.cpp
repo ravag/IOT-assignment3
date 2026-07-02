@@ -13,5 +13,4 @@ void SendMsgTask::tick() {
         msg = "OPEN: " + String(random(101)) + " MODE: AUTOMATIC"; 
         MsgService.sendMsg(msg);
     }
-    
 }

@@ -5,11 +5,13 @@
 #include <Arduino.h>
 #include "devices/PotImpl.h"
 #include "devices/ServoMotorImpl.h"
+#include "LiquidCrystal_I2C.h"
 
 enum SystemMode { AUTOMATIC, MANUAL, UNCONNECTED };
 
 class MainTask {
     private:
+        LiquidCrystal_I2C* lcd;
         ServoMotorImpl* servo;
         PotImpl* pot;
         SystemMode* currentMode;
@@ -22,9 +24,11 @@ class MainTask {
 
         unsigned long timeToMove;
         const unsigned long MS_PER_DEGREE = 55;
+
+        void updateLCD();
     
     public:
-        MainTask(ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* valveState);
+        MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, SystemMode* mode, bool* valveState);
 
         void tick();
 };
