@@ -23,12 +23,16 @@ void sendDataToCUS();
 void setup() {
     Serial.begin(115200);
 
+    Serial.println("[DEBUG]: Dispositivi in preparazione");
+
     button = new ButtonImpl(BUTTON_PIN);
     servo = new ServoMotorImpl(SERVO_PIN);
     pot = new PotImpl(POT_PIN);
     lcd = new LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
 
     mainTask = new MainTask(servo, pot, &currentMode, &isServoConfiguredForManual);
+
+    Serial.println("[DEBUG]: Provo inizializzazione LCD...");
 
     lcd->init();
     lcd->backlight();
@@ -101,6 +105,7 @@ void loop() {
 }
 
 void updateLCD() {
+    lcd->clear();
     lcd->setCursor(0, 0);
     if(currentMode == MANUAL) {
         lcd->print("Mode: MANUAL       ");
@@ -115,6 +120,7 @@ void updateLCD() {
 
     if(currentMode == MANUAL) {
         lcd->print(pot->getPercentage());
+        lcd->print("%");
     } else if(currentMode == AUTOMATIC) {
         if(servo->isOn()) {
             lcd->print("AUTOMATIC Mode Active");
