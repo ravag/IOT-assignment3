@@ -7,9 +7,11 @@
 #include "devices/ServoMotorImpl.h"
 #include "SystemGlobals.h"
 #include "kernel/Task.h"
+#include "LiquidCrystal_I2C.h"
 
 class MainTask: public Task {
     private:
+        LiquidCrystal_I2C* lcd;
         ServoMotorImpl* servo;
         PotImpl* pot;
         bool* isServoConfiguredForManual;
@@ -20,9 +22,11 @@ class MainTask: public Task {
 
         unsigned long timeToMove;
         const unsigned long MS_PER_DEGREE = 55;
+
+        void updateLCD();
     
     public:
-        MainTask(ServoMotorImpl* servo, PotImpl* pot, bool* valveState);
+        MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, bool* valveState);
 
         void tick();
 };
