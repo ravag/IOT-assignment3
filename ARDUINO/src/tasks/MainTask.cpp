@@ -10,7 +10,7 @@ MainTask::MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, 
     this->timeInState = 0;
     this->timeToMove = 0;
     this->oldAngle = 0;
-    this->servo->on();
+    /* this->servo->on(); */
 }
 
 void MainTask::tick() {
@@ -41,7 +41,6 @@ void MainTask::tick() {
             timeToMove = timeToMove == 0 ? 1 : timeToMove;
         }
     }
-
     unsigned long dt = millis() - timeInState;
 
     //muovo il servo solo se ho ancora tempo e l'angolo di target è diverso da quello a cui è adesso il servo

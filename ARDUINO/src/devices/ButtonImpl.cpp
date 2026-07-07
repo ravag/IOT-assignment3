@@ -9,9 +9,9 @@ void call();
 ButtonImpl::ButtonImpl(int pin){
   this->pin = pin;
   this->button = false;
-  pinMode(pin, INPUT);
+  pinMode(pin, INPUT_PULLUP);
   instance = this;
-  attachInterrupt(digitalPinToInterrupt(pin), &call, RISING);
+  attachInterrupt(digitalPinToInterrupt(pin), &call, FALLING);
 } 
 
 void ButtonImpl::resetButton(){

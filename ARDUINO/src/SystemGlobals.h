@@ -3,8 +3,8 @@
 
 enum SystemStatus {AUTOMATIC,MANUAL,UNCONNECTED};
 
-SystemStatus state;
+extern SystemStatus state;
 
-int targetAngle;
+extern int targetAngle;
 
 #endif
