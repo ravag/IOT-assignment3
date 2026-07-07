@@ -4,75 +4,58 @@ MainTask::MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, 
     this->lcd = lcd;
     this->servo = servo;
     this->pot = pot;
-    this->isServoConfiguredForManual = isManualInit;
 
     this->currentAngle = 0;
     this->startAngle = 0;
     this->timeInState = 0;
     this->timeToMove = 0;
+    this->oldAngle = 0;
+    this->servo->on();
 }
 
 void MainTask::tick() {
-    if(state == MANUAL) {
-        if(!(*isServoConfiguredForManual)) {
-            servo->on();
-            Serial.println("[DEBUG]: MANUAL Mode Activated");
-            *isServoConfiguredForManual = true;
+    if (state != AUTOMATIC) {
 
+        //valori settati se in MANUALE, leggo il target dal potenziometro
+        if (this->pot->hasChanged()) {
             int potPercentage = pot->getPercentage();
-            currentAngle = map(potPercentage, 0, 100, 0, 90);
-            targetAngle = currentAngle;
-            startAngle = currentAngle;
+            targetAngle = map(potPercentage, 0, 100, 0, 90);
+            oldAngle = targetAngle;
             timeInState = millis();
-            timeToMove = 0;
+            startAngle = servo->getPosition();
 
-            updateLCD();
-        }
-
-        int potPercentage = pot->getPercentage();
-        int newTarget = map(potPercentage, 0, 100, 0, 90);
-
-        //Ho messo che si sposta solo se il potenziometro si sposta di almeno 2 gradi per evitare micro flicker analogici
-        if(abs(newTarget - targetAngle) >= 2) {
-            startAngle = currentAngle;
-            targetAngle = newTarget;
-            timeInState = millis();
-
-            unsigned long degreesToTravel = abs(targetAngle - currentAngle);
+            unsigned long degreesToTravel = abs(targetAngle - startAngle);
             timeToMove = degreesToTravel * MS_PER_DEGREE;
 
-            //Evito divisioni per 0 se il movimento è per qualche motivo minore a 1
-            if(timeToMove == 0) {
-                timeToMove = 1;
-            }
-
-            updateLCD();
+            timeToMove = timeToMove == 0 ? 1 : timeToMove;
         }
+    } else {        //valori settati se in AUTOMATICO, il target lo prendo da quello passato tramite messaggio, aggiorno l'oldAngle tramite il vecchio targetAngle
+        if (abs(oldAngle - targetAngle) >= 2) {
+            oldAngle = targetAngle;
+            timeInState = millis();
+            startAngle = servo->getPosition();
 
-        unsigned long dt = millis() - timeInState;
+            unsigned long degreesToTravel = abs(targetAngle - startAngle);
+            timeToMove = degreesToTravel * MS_PER_DEGREE;
 
-        if(dt <= timeToMove && currentAngle != targetAngle) {
-            float progress = (float)dt /timeToMove;
-
-            currentAngle = startAngle + (progress * (targetAngle - startAngle));
-            servo->setPosition(currentAngle);
-
-            Serial.print("[DEBUG]: Target: ");
-            Serial.print(targetAngle);
-            Serial.print("° | Current Angle: ");
-            Serial.print(currentAngle);
-            Serial.print("°");
-            Serial.println("");
-
-        } else if(currentAngle != targetAngle) {
-            currentAngle = targetAngle;
-            servo->setPosition(currentAngle);
-
-            updateLCD();
+            timeToMove = timeToMove == 0 ? 1 : timeToMove;
         }
-    } else {
-        updateLCD();
     }
+
+    unsigned long dt = millis() - timeInState;
+
+    //muovo il servo solo se ho ancora tempo e l'angolo di target è diverso da quello a cui è adesso il servo
+    if(dt <= timeToMove && servo->getPosition() != targetAngle) {
+        float progress = (float)dt /timeToMove;
+
+        currentAngle = startAngle + (progress * (targetAngle - startAngle));
+        servo->setPosition(currentAngle);
+
+    } else if(currentAngle != targetAngle) {        //muovo il servo fino alla fine dato che non ho piu tempo
+        currentAngle = targetAngle;
+        servo->setPosition(currentAngle);
+    }
+    updateLCD();
 }
 
 void MainTask::updateLCD() {
@@ -86,19 +69,8 @@ void MainTask::updateLCD() {
         lcd->print("Mode: UNCONNECTED  ");
     }
 
-    lcd->setCursor(0, 1);
+    lcd->setCursor(0, 2);
     lcd->print("Value: ");
-
-    if(state == MANUAL) {
-        lcd->print(pot->getPercentage());
-        lcd->print("%");
-    } else if(state == AUTOMATIC) {
-        if(servo->isOn()) {
-            Serial.println("[DEBUG]: AUTOMATIC Mode ON");
-        } else {
-            lcd->print("0%    ");
-        }
-    } else if (state == UNCONNECTED) {
-        lcd->print("Switching...");
-    }
+    lcd->print(map(servo->getPosition(), 0, 90, 0, 100));
+    lcd->print("%");
 }

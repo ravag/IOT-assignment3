@@ -14,11 +14,11 @@ class MainTask: public Task {
         LiquidCrystal_I2C* lcd;
         ServoMotorImpl* servo;
         PotImpl* pot;
-        bool* isServoConfiguredForManual;
 
         unsigned long timeInState;
         int currentAngle;
         int startAngle;
+        int oldAngle;
 
         unsigned long timeToMove;
         const unsigned long MS_PER_DEGREE = 55;
