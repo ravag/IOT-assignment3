@@ -12,6 +12,7 @@ import java.awt.event.WindowListener;
 import cus.backend.RunBackend;
 import cus.data.DataPoint;
 import cus.data.Mode;
+import cus.kernel.Receiver;
 import cus.kernel.SerialCommunication;
 import cus.kernel.valveManagement;
 import cus.mqtt.SimpleSubscriber;
@@ -23,8 +24,10 @@ public class Main {
         RunBackend backend = new RunBackend(data);
         SimpleSubscriber subscriber = new SimpleSubscriber(data);
         //valveManagement valve = new valveManagement(new SerialCommunication("COM3", 115200), data);
+        Receiver recv = new Receiver(new SerialCommunication("COM5", 115200), data);
         subscriber.start();
         backend.start();
+        recv.start();
         //valve.start();
 
         JFrame frame = new JFrame("Stopper");
@@ -32,6 +35,7 @@ public class Main {
         btn.addActionListener(e -> {
             backend.terminate();
             subscriber.terminate();
+            recv.terminate();
             //valve.terminate();
         });
         btn.setSize(400, 200);
@@ -46,6 +50,7 @@ public class Main {
             public void windowClosing(WindowEvent e) {
                 backend.terminate();
                 subscriber.terminate();
+                recv.terminate();
                 //valve.terminate();
             }
         };
