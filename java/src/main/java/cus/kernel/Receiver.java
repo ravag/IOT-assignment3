@@ -18,7 +18,8 @@ public class Receiver extends Thread {
     public void run() {
         while (!stopped) {
             msg = serial.readResponse();
-            if (msg != "") {
+            if (msg != "" || !msg.contains("[DEBUG]")) {
+                System.out.println(msg);
                 String[] spaced = msg.split(" ");
                 System.out.println(spaced);
                 data.setCurrentOpening(Integer.parseInt(spaced[1]));
