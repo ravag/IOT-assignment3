@@ -18,8 +18,8 @@ bool ServoMotorImpl::isOn(){
 }
 
 void ServoMotorImpl::setPosition(int angle){
-	if (angle > 180){
-		angle = 180;
+	if (angle > 90){
+		angle = 90;
 	} else if (angle < 0){
 		angle = 0;
 	}

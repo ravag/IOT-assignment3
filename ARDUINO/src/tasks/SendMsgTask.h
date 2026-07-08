@@ -15,6 +15,7 @@ private:
     String msg;
     String status;
     ServoMotorImpl* servo;
+    String change;
 };
 
 

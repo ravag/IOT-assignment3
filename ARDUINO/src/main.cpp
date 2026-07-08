@@ -19,8 +19,11 @@ LiquidCrystal_I2C* lcd;
 Scheduler sched;
 SystemStatus state;
 int targetAngle;
+int sentTarget;
+int oldSentTarget;
 
-bool isServoConfiguredForManual = false;
+bool hasChangedMode = false;
+bool hasReceivedOpening;
 
 void setup() {
     Serial.begin(115200);
@@ -29,6 +32,8 @@ void setup() {
 
     state = AUTOMATIC;
     targetAngle = 0;
+    sentTarget = 0;
+    hasReceivedOpening = false;
 
     button = new ButtonImpl(BUTTON_PIN);
     servo = new ServoMotorImpl(SERVO_PIN);
@@ -44,10 +49,10 @@ void setup() {
 
     sched.init(250);
 
-    Task* mainTask = new MainTask(lcd, servo, pot, &isServoConfiguredForManual);
-    mainTask->init(500);
+    Task* mainTask = new MainTask(lcd, servo, pot);
+    mainTask->init(250);
     Serial.println("mainTask");
-    Task* send = new SendMsgTask(pot);
+    Task* send = new SendMsgTask(servo);
     send->init(250);
     Serial.println("SendTask");
     Task* recv = new ReceiveMsgTask();

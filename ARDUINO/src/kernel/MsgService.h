@@ -3,30 +3,17 @@
 
 #include "Arduino.h"
 
-class Msg {
-  String content;
-
-public:
-  Msg(String content){
-    this->content = content;
-  }
-  
-  String getContent(){
-    return content;
-  }
-};
-
 class MsgServiceClass {
     
 public: 
   
-  Msg* currentMsg;
+  String currentMsg;
   bool msgAvailable;
 
   void init();  
 
   bool isMsgAvailable();
-  Msg* receiveMsg();
+  String receiveMsg();
   
   void sendMsg(const String& msg);
 };

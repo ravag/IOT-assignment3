@@ -5,13 +5,13 @@
 
 ReceiveMsgTask::ReceiveMsgTask() {
     msg = "";   
-    state = AUTOMATIC;
+    oldSentTarget = 0;
 }
 
 void ReceiveMsgTask::tick() {
     if (MsgService.isMsgAvailable())
     {
-        msg = MsgService.receiveMsg()->getContent();
+        msg = MsgService.receiveMsg();
         //Msg format: "MODE: mode, OPEN: open"
         int i = 6;
         char ch = msg[i];
@@ -38,7 +38,17 @@ void ReceiveMsgTask::tick() {
             content += ch;
             i++;
         }
-        targetAngle = content.toInt();
+        if (oldSentTarget != sentTarget)
+        {
+            oldSentTarget = sentTarget;
+            hasReceivedOpening = true;
+        }
+        sentTarget = content.toInt();
+        if (state == AUTOMATIC)
+        {
+            targetAngle = sentTarget;
+        }
+        
         //Istruzione di debug, da rimuovere
         //MsgService.sendMsg(content);
     }

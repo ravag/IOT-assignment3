@@ -1,7 +1,6 @@
 package cus.backend;
 
 import java.util.Calendar;
-import java.util.Random;
 
 import cus.data.DataPoint;
 import cus.data.Pair;
@@ -20,7 +19,6 @@ public class DataService extends AbstractVerticle {
     
     private int port;
 	private DataPoint values;
-	private Random rnd = new Random();
 	
 	public DataService(int port, DataPoint values) {
 		this.values = values;		
@@ -97,7 +95,6 @@ public class DataService extends AbstractVerticle {
 		} 
 
 		JsonObject data = new JsonObject();
-		values.setCurrentOpening(rnd.nextInt(100));
 		data.put("data",arr);
 		data.put("opening",values.getCurrentOpening());
 		data.put("status", values.getState().toString());

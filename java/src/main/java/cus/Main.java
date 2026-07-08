@@ -8,7 +8,6 @@ import javax.swing.WindowConstants;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.Serial;
 
 import cus.backend.RunBackend;
 import cus.data.DataPoint;
@@ -21,7 +20,7 @@ import cus.mqtt.SimpleSubscriber;
 public class Main {
     
     public static void main(String[] args) throws Exception{
-        SerialCommunication serial = new SerialCommunication("COM4", 115200);
+        SerialCommunication serial = new SerialCommunication("COM5", 115200);
         serial.connect();
         DataPoint data = new DataPoint(10, 0, Mode.AUTOMATIC, 0);
         RunBackend backend = new RunBackend(data);

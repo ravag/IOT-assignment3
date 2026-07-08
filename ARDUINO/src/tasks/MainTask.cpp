@@ -1,6 +1,6 @@
 #include "MainTask.h"
 
-MainTask::MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, bool* isManualInit) {
+MainTask::MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot) {
     this->lcd = lcd;
     this->servo = servo;
     this->pot = pot;
@@ -21,6 +21,16 @@ void MainTask::tick() {
             int potPercentage = pot->getPercentage();
             targetAngle = map(potPercentage, 0, 100, 0, 90);
             oldAngle = targetAngle;
+            timeInState = millis();
+            startAngle = servo->getPosition();
+
+            unsigned long degreesToTravel = abs(targetAngle - startAngle);
+            timeToMove = degreesToTravel * MS_PER_DEGREE;
+
+            timeToMove = timeToMove == 0 ? 1 : timeToMove;
+        } else if(hasReceivedOpening && state != UNCONNECTED) {    //Se il potenziometro non è variato provo a vedere se mi hanno mandato un'apertura
+            hasReceivedOpening = false;
+            targetAngle = sentTarget;
             timeInState = millis();
             startAngle = servo->getPosition();
 

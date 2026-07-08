@@ -26,7 +26,7 @@ class MainTask: public Task {
         void updateLCD();
     
     public:
-        MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot, bool* valveState);
+        MainTask(LiquidCrystal_I2C* lcd, ServoMotorImpl* servo, PotImpl* pot);
 
         void tick();
 };

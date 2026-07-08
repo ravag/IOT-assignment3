@@ -9,7 +9,7 @@ void MsgServiceClass::init(){
   Serial.begin(115200);
   content.reserve(256);
   content = "";
-  currentMsg = NULL;
+  currentMsg = "";
   msgAvailable = false;  
 }
 
@@ -17,15 +17,15 @@ bool MsgServiceClass::isMsgAvailable(){
   return msgAvailable;
 }
 
-Msg* MsgServiceClass::receiveMsg(){
+String MsgServiceClass::receiveMsg(){
   if (msgAvailable){
-    Msg* msg = currentMsg;
+    String msg = currentMsg;
     msgAvailable = false;
-    currentMsg = NULL;
+    currentMsg = "";
     content = "";
     return msg;  
   } else {
-    return NULL; 
+    return ""; 
   }
 }
 
@@ -38,7 +38,7 @@ void serialEvent() {
   while (Serial.available()) {
     char ch = (char) Serial.read();
     if (ch == '\n'){
-      MsgService.currentMsg = new Msg(content);
+      MsgService.currentMsg = content;
       MsgService.msgAvailable = true;      
     } else {
       content += ch;      

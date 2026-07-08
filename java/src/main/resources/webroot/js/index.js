@@ -130,21 +130,14 @@ async function failableFetch(url) {
 
 //
 async function addValues() {
-    const p = document.querySelector("div.valori p");
     const url = "/api/data";
 
-    
     try {
         const response = await failableFetch(url)
         if (!response.ok) {
             throw new Error("errore di connessione: " + response.status)
         }
         const json = await response.json();
-        let text = "";
-        json["data"].forEach(e => {
-            text += `[${e["value"]},${e["time"]}]`
-        });
-        p.innerHTML = text;
         systemStatus = json["status"];
         //systemStatus = systemStatus=="NOT AVAILABLE"? "AUTOMATIC" : systemStatus; /*Prendi dal messaggio lo stato a cui riandare se prima era NOT AVAILABLE*/ 
         //console.log(json);

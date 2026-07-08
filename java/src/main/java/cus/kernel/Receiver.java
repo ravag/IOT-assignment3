@@ -11,7 +11,6 @@ public class Receiver extends Thread {
 
     public Receiver(SerialCommunication serial, DataPoint data) {
         this.serial = serial;
-        this.serial.connect();
         this.data = data;
         this.msg = "";
     }
@@ -20,10 +19,10 @@ public class Receiver extends Thread {
         while (!stopped) {
             msg = serial.readResponse();
             if (msg != "" && !msg.contains("[DEBUG]")) {
-                String[] values = msg.replace("MODE: ", "").replace("OPEN: ", "").split(",");
+                String[] values = msg.replace("MODE: ", "").replace("OPEN: ", "").replace("CHANGE: ", "").split(",");
 
                 data.setCurrentOpening(Integer.parseInt(values[0]));
-                if (!data.getState().equals(Mode.UNCONNECTED)) {
+                if (!data.getState().equals(Mode.UNCONNECTED) && values[2].equals("true")) {
                     data.setState(Mode.valueOf(values[1]));
                 }
             }

@@ -7,4 +7,9 @@ extern SystemStatus state;
 
 extern int targetAngle;
 
+extern bool hasChangedMode;
+
+extern int sentTarget;
+extern bool hasReceivedOpening;
+
 #endif

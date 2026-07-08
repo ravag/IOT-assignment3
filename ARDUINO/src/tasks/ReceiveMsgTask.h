@@ -14,6 +14,7 @@ public:
 private:
     
     String msg;
+    int oldSentTarget;
 };
 
 extern int targetOpening;

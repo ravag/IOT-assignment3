@@ -7,6 +7,7 @@ SwitchTask::SwitchTask(ButtonImpl* button) {
 void SwitchTask::tick() {
     if (button->isPressed()) {
         state = state == AUTOMATIC ? MANUAL : state == UNCONNECTED ? UNCONNECTED : AUTOMATIC;
+        hasChangedMode = true;
         button->resetButton();
     } 
 }
