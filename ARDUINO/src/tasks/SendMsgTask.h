@@ -3,17 +3,18 @@
 
 #include "kernel\MsgService.h"
 #include "kernel\Task.h"
-#include "devices\Pot.h"
+#include "devices\ServoMotorImpl.h"
 #include "SystemGlobals.h"
 
 class SendMsgTask : public Task {
 public:
-    SendMsgTask(Pot* pot);
+    SendMsgTask(ServoMotorImpl* servo);
     void tick();
 
 private:
     String msg;
-    Pot* pot;
+    String status;
+    ServoMotorImpl* servo;
 };
 
 
