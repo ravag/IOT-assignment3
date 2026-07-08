@@ -10,8 +10,8 @@ Sonar* pSonar = new Sonar(12,11,150000);
 
 /* wifi network info */
 
-const char* ssid = "OPPO A73 5G";
-const char* password = "daniele04";
+const char* ssid = "EOLO - FRITZ!Box 7430 NX";
+const char* password = "15147241081514237310";
 
 /* MQTT server address */
 const char* mqtt_server = "broker.mqtt-dashboard.com";
